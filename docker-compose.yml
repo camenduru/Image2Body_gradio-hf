@@ -1,8 +1,6 @@
 services:
   image2body_backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
+    build: .
     ports:
       - "80:5000"
     # volumes:

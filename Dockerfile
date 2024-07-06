@@ -23,6 +23,9 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 \
 
 WORKDIR /app
 
+RUN useradd -m -u 1000 user
+USER user
+
 # 依存関係をインストール
 COPY requirements.txt /app/
 RUN apt -y update && apt -y upgrade
