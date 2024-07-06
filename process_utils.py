@@ -18,9 +18,8 @@ load_dotenv()
 # グローバル変数
 local_model = False
 model = None
-# device = "cuda" if torch.cuda.is_available() else "cpu"
-device = "cpu"
-torch_dtype = torch.float16 if device == "cuda" else torch.float32
+device = None
+torch_dtype = None # torch.float16 if device == "cuda" else torch.float32
 sotai_gen_pipe = None
 refine_gen_pipe = None
 
@@ -44,9 +43,10 @@ def ensure_rgb(image):
         return image.convert('RGB')
     return image
 
-def initialize(_local_model=False):
-    global model, sotai_gen_pipe, refine_gen_pipe, local_model
-
+def initialize(_local_model=False, use_gpu=True)
+    global model, sotai_gen_pipe, refine_gen_pipe, local_model, device, torch_dtype
+    device = "cuda" if use_gpu and torch.cuda.is_available() else "cpu"
+    torch_dtype = torch.float16 if device == "cuda" else torch.float32
     local_model = _local_model
     model = load_wd14_tagger_model()
     sotai_gen_pipe = initialize_sotai_model()
@@ -225,7 +225,7 @@ def generate_sotai_image(input_image: Image.Image, output_width: int, output_hei
             image=[input_image, input_image],
             negative_prompt=f"(wings:1.6), (clothes, garment, lighting, gray, missing limb, extra line, extra limb, extra arm, extra legs, hair, bangs, fringe, forelock, front hair, fill:1.4), (ink pool:1.6)",
             # negative_prompt=f"{easy_negative_v2}, (wings:1.6), (clothes, garment, lighting, gray, missing limb, extra line, extra limb, extra arm, extra legs, hair, bangs, fringe, forelock, front hair, fill:1.4), (ink pool:1.6)",
-            num_inference_steps=40,
+            num_inference_steps=20,
             guidance_scale=8,
             width=output_width,
             height=output_height,

@@ -3,6 +3,7 @@ from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 import io
 import os
+import argparse
 from PIL import Image
 import torch
 import gc
@@ -183,5 +184,10 @@ def server_error(e):
     return jsonify(error=str(e)), 500
 
 if __name__ == '__main__':
-    initialize(local_model=True)
+    parser = argparse.ArgumentParser(description='Server options.')
+    parser.add_argument('--local_model', type=bool, default=False, help='Use local model')
+    parser.add_argument('--use_gpu', type=bool, default=True, help='Set to True to use GPU but if not available, it will use CPU')
+    args = parser.parse_args()
+    
+    initialize(local_model=args.local_model, use_gpu=args.use_gpu)
     socketio.run(app, debug=True, host='0.0.0.0', port=5000)
