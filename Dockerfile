@@ -1,39 +1,44 @@
 # CUDA 12.1ベースのUbuntuイメージを使用
 FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu20.04
 
-RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+# 環境変数の設定
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Tokyo
 
-# 必要なパッケージをインストール
-RUN apt-get update && apt-get install -y \
+# システムの更新とPython 3.10のインストール
+RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
+    wget \
+    libopencv-dev \
     && add-apt-repository ppa:deadsnakes/ppa \
-    && apt-get update && apt-get install -y \
+    && apt-get update && apt-get install -y --no-install-recommends \
     python3.10 \
     python3.10-dev \
     python3.10-distutils \
-    wget \
+    && ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-# pipのインストール
+
+# pipのインストールとPythonのセットアップ
 RUN wget https://bootstrap.pypa.io/get-pip.py \
     && python3.10 get-pip.py \
-    && rm get-pip.py
-# デフォルトのpythonとpipコマンドをpython3.10とpip3.10にリンク
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 \
+    && rm get-pip.py \
+    && update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 \
     && update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1
 
 WORKDIR /app
 
-RUN useradd -m -u 1000 user
-USER user
-
 # 依存関係をインストール
 COPY requirements.txt /app/
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends libopencv-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir --no-dependencies transformers
 
+# アプリケーションのコピー
 COPY . /app
+
+# 非rootユーザーの作成と切り替え
+RUN useradd -m appuser && chown -R appuser:appuser /app
+USER appuser
 
 EXPOSE 80
 
