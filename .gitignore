@@ -6,3 +6,4 @@ hf_gradio/
 hf_cache/
 wd14_tagger_model/
 images/
+.env
