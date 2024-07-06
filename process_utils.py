@@ -10,30 +10,19 @@ import torch
 from diffusers import StableDiffusionPipeline, StableDiffusionControlNetPipeline, ControlNetModel, UniPCMultistepScheduler, AutoencoderKL
 import gc
 from peft import PeftModel
-from huggingface_hub import hf_hub_download
 from dotenv import load_dotenv
-
-load_dotenv()
+from hf_utils import download_file
 
 # グローバル変数
-local_model = False
+use_local = False
 model = None
 device = None
 torch_dtype = None # torch.float16 if device == "cuda" else torch.float32
 sotai_gen_pipe = None
 refine_gen_pipe = None
 
-def download_file(filename, subfolder=None):
-    return hf_hub_download(
-        repo_id=os.environ['REPO_ID'],
-        filename=filename,
-        subfolder=subfolder,
-        token=os.environ['HF_TOKEN'],
-        cache_dir=os.environ['CACHE_DIR']
-    )
-
-def get_file_path(filename, subfolder=None):
-    if local_model:
+def get_file_path(filename, subfolder):
+    if use_local:
         return os.path.join(subfolder, filename)
     else:
         return download_file(filename, subfolder)
@@ -43,11 +32,15 @@ def ensure_rgb(image):
         return image.convert('RGB')
     return image
 
-def initialize(_local_model=False, use_gpu=True)
-    global model, sotai_gen_pipe, refine_gen_pipe, local_model, device, torch_dtype
+def initialize(_use_local, use_gpu):
+    load_dotenv()
+    global model, sotai_gen_pipe, refine_gen_pipe, use_local, device, torch_dtype
     device = "cuda" if use_gpu and torch.cuda.is_available() else "cpu"
     torch_dtype = torch.float16 if device == "cuda" else torch.float32
-    local_model = _local_model
+    use_local = _use_local
+    print('')
+    print(f"Device: {device}, Local model: {_use_local}")
+    print('')
     model = load_wd14_tagger_model()
     sotai_gen_pipe = initialize_sotai_model()
     refine_gen_pipe = initialize_refine_model()
@@ -62,6 +55,7 @@ def initialize_sotai_model():
     sotai_sd_model_path = get_file_path(os.environ["sotai_sd_model_name"], subfolder=os.environ["sd_models_dir"])
     controlnet_path1 =  get_file_path(os.environ["controlnet_name1"], subfolder=os.environ["controlnet_dir2"])
     controlnet_path2 =  get_file_path(os.environ["controlnet_name2"], subfolder=os.environ["controlnet_dir1"])
+    print(use_local, controlnet_path1)
 
     # Load the Stable Diffusion model
     sd_pipe = StableDiffusionPipeline.from_single_file(
@@ -156,7 +150,8 @@ def initialize_refine_model():
 def get_wd_tags(images: list) -> list:
     global model
     if model is None:
-        initialize()
+        raise ValueError("Model is not initialized")
+        # initialize()
     preprocessed_images = [wd14_preprocess_image(img) for img in images]
     preprocessed_images = np.array(preprocessed_images)
     return generate_tags(preprocessed_images, os.environ["wd_model_name"], model)
@@ -207,7 +202,8 @@ def generate_sotai_image(input_image: Image.Image, output_width: int, output_hei
     input_image = ensure_rgb(input_image)
     global sotai_gen_pipe
     if sotai_gen_pipe is None:
-        initialize()
+        raise ValueError("Model is not initialized")
+        # initialize()
 
     prompt = "anime pose, girl, (white background:1.5), (monochrome:1.5), full body, sketch, eyes, breasts, (slim legs, skinny legs:1.2)"
     try:
@@ -250,7 +246,8 @@ def generate_refined_image(prompt: str, original_image: Image.Image, output_widt
     original_image = ensure_rgb(original_image)
     global refine_gen_pipe
     if refine_gen_pipe is None:
-        initialize()
+        raise ValueError("Model is not initialized")
+        # initialize()
 
     try:
         original_image_np = np.array(original_image)

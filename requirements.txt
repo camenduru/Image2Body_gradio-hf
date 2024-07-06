@@ -5,6 +5,7 @@ torchaudio==2.2.0
 diffusers==0.29.1
 Flask==3.0.3
 Flask-Cors==4.0.0
+Flask-SocketIO==5.3.6
 gradio==4.36.1
 huggingface_hub==0.23.2
 kornia==0.7.1
@@ -17,3 +18,4 @@ transforms==0.2.1
 tokenizers
 pytorch_lightning
 python-dotenv
+peft==0.11.1

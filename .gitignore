@@ -3,3 +3,5 @@ __pycache__/
 venv/
 output/
 hf_gradio/
+hf_cache/
+wd14_tagger_model/

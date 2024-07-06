@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn 
 import torch.nn.functional as F
 import functools
-from app import download_file
+from hf_utils import download_file
 
 class UnetGenerator(nn.Module):
     """Create a Unet-based generator"""
