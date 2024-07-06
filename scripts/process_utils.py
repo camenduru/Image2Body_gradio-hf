@@ -33,7 +33,7 @@ def ensure_rgb(image):
     return image
 
 def initialize(_use_local, use_gpu):
-    load_dotenv()
+    # load_dotenv()
     global model, sotai_gen_pipe, refine_gen_pipe, use_local, device, torch_dtype
     device = "cuda" if use_gpu and torch.cuda.is_available() else "cpu"
     torch_dtype = torch.float16 if device == "cuda" else torch.float32
