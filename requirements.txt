@@ -1,0 +1,19 @@
+--extra-index-url https://download.pytorch.org/whl/cu116
+torch==2.2.0
+torchvision==0.17.0
+torchaudio==2.2.0
+diffusers==0.29.1
+Flask==3.0.3
+Flask-Cors==4.0.0
+gradio==4.36.1
+huggingface_hub==0.23.2
+kornia==0.7.1
+numpy==1.23.5
+opencv-python==4.9.0.80
+Pillow==10.3.0
+Requests==2.32.3
+tensorflow==2.16.1
+transforms==0.2.1
+tokenizers
+pytorch_lightning
+python-dotenv
