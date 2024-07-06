@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from PIL import Image
-from anime import generate_sketch
+from scripts.anime import generate_sketch
 
 def pad64(x):
     return int(np.ceil(float(x) / 64.0) * 64 - x)

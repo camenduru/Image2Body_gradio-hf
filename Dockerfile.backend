@@ -30,6 +30,8 @@ RUN apt -y install libopencv-dev
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-dependencies transformers
 
-EXPOSE 5000
+COPY . /app
+
+EXPOSE 80
 
 CMD ["python", "app.py", "--use_gpu"]

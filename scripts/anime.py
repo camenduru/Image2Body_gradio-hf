@@ -6,10 +6,9 @@ Example:
 
 import os
 import torch
-from torchvision import transforms
-from data import get_image_list, get_transform
-from model import create_model
-from data import read_img_path, tensor_to_img, save_image
+from scripts.data import get_image_list, get_transform
+from scripts.model import create_model
+from scripts.data import tensor_to_img, save_image
 import argparse
 from tqdm.auto import tqdm
 from kornia.enhance import equalize_clahe

@@ -4,14 +4,14 @@ import base64
 from PIL import Image
 import cv2
 import numpy as np
-from generate_prompt import load_wd14_tagger_model, generate_tags, preprocess_image as wd14_preprocess_image
-from lineart_util import scribble_xdog, get_sketch, canny
+from scripts.generate_prompt import load_wd14_tagger_model, generate_tags, preprocess_image as wd14_preprocess_image
+from scripts.lineart_util import scribble_xdog, get_sketch, canny
 import torch
 from diffusers import StableDiffusionPipeline, StableDiffusionControlNetPipeline, ControlNetModel, UniPCMultistepScheduler, AutoencoderKL
 import gc
 from peft import PeftModel
 from dotenv import load_dotenv
-from hf_utils import download_file
+from scripts.hf_utils import download_file
 
 # グローバル変数
 use_local = False

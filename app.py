@@ -13,7 +13,7 @@ import queue
 import threading
 import uuid
 import concurrent.futures
-from process_utils import *
+from scripts.process_utils import *
 
 app = Flask(__name__)
 # app.secret_key = 'super_secret_key'
@@ -190,4 +190,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     initialize(args.use_local, args.use_gpu)
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+    socketio.run(app, debug=True, host='0.0.0.0', port=80)
