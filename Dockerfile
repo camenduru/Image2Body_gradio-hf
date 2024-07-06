@@ -28,10 +28,10 @@ USER user
 
 # 依存関係をインストール
 COPY requirements.txt /app/
-RUN apt -y update && apt -y upgrade
-RUN apt -y install libopencv-dev
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-dependencies transformers
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends libopencv-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY . /app
 
