@@ -4,7 +4,6 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import concurrent.futures
-import redis
 
 import io
 import os
@@ -26,9 +25,6 @@ from geventwebsocket.handler import WebSocketHandler
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
-
-# Redisクライアントの初期化（レート制限とキャッシュのため）
-redis_client = redis.Redis(host=os.environ.get('REDIS_HOST', 'localhost'), port=int(os.environ.get('REDIS_PORT', 6379)), db=0)
 
 # レート制限の設定
 limiter = Limiter(
@@ -113,6 +109,23 @@ def worker():
 # ワーカースレッドの開始
 threading.Thread(target=worker, daemon=True).start()
 
+# グローバル変数を使用して接続数とタスク数を管理
+connected_clients = 0
+tasks_per_client = {}
+
+@socketio.on('connect')
+def handle_connect(auth):
+    global connected_clients
+    if connected_clients > 100:
+        return False  # 接続を拒否
+    connected_clients += 1
+    emit('queue_update', {'active_tasks': len(active_tasks), 'active_task_order': None})
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    global connected_clients
+    connected_clients -= 1
+
 @app.route('/submit_task', methods=['POST'])
 @limiter.limit("10 per minute")  # 1分間に10回までのリクエストに制限
 def submit_task():
@@ -123,7 +136,7 @@ def submit_task():
     client_ip = get_remote_address()
     
     # 同一IPからの同時タスク数を制限
-    if redis_client.get(f'tasks:{client_ip}') and int(redis_client.get(f'tasks:{client_ip}')) >= 2:
+    if tasks_per_client.get(client_ip, 0) >= 2:
         return jsonify({'error': 'Maximum number of concurrent tasks reached'}), 429
 
     task_id = str(uuid.uuid4())
@@ -145,8 +158,7 @@ def submit_task():
     active_tasks[task_id] = task
     
     # 同一IPからのタスク数をインクリメント
-    redis_client.incr(f'tasks:{client_ip}')
-    redis_client.expire(f'tasks:{client_ip}', 3600)  # 1時間後に期限切れ
+    tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) + 1
     
     update_queue_status(f'Task submitted: {task_id}')
     
@@ -169,7 +181,7 @@ def cancel_task(task_id):
             del task_futures[task_id]
         del active_tasks[task_id]
         # タスク数をデクリメント
-        redis_client.decr(f'tasks:{client_ip}')
+        tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) - 1
         update_queue_status('Task cancelled')
         return jsonify({'message': 'Task cancellation requested'})
     else:
@@ -177,7 +189,7 @@ def cancel_task(task_id):
             if task.task_id == task_id and task.client_ip == client_ip:
                 task.cancel_flag = True
                 # タスク数をデクリメント
-                redis_client.decr(f'tasks:{client_ip}')
+                tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) - 1
                 return jsonify({'message': 'Task cancellation requested for queued task'})
         return jsonify({'error': 'Task not found'}), 404
 
@@ -189,18 +201,6 @@ def get_active_task_order(task_id):
 def handle_get_task_order(task_id):
     task_order = get_active_task_order(task_id)
     return jsonify({'task_order': task_order})
-
-@socketio.on('connect')
-def handle_connect(auth):
-    # クライアント接続数の制限
-    if redis_client.get('connected_clients') and int(redis_client.get('connected_clients')) > 100:
-        return False  # 接続を拒否
-    redis_client.incr('connected_clients')
-    emit('queue_update', {'active_tasks': len(active_tasks), 'active_task_order': None})
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    redis_client.decr('connected_clients')
 
 # Flaskルート
 # ルートパスのGETリクエストに対するハンドラ
@@ -263,7 +263,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     # initialize(args.use_local, args.use_gpu, args.use_dotenv)
+
     port = int(os.environ.get('PORT', 7860))
-    print(f"Starting server on port {port}")
     server = pywsgi.WSGIServer(('0.0.0.0', port), app, handler_class=WebSocketHandler)
     server.serve_forever()
