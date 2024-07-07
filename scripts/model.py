@@ -154,7 +154,7 @@ def create_model(model, use_local):
 
     import os
     if model == 'default':
-        model_path = (lambda filename, subfolder: os.path.join(subfolder, filename) if use_local else download_file(filename, subfolder))("netG.pth", "models/Anime2Sketch")
+        model_path = "models/Anime2Sketch/netG.pth" if use_local else download_file("netG.pth", "models/Anime2Sketch")
 
         ckpt = torch.load(model_path)
         for key in list(ckpt.keys()):
