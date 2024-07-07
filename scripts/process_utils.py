@@ -24,7 +24,7 @@ refine_gen_pipe = None
 
 def get_file_path(filename, subfolder):
     if use_local:
-        return os.path.join(subfolder, filename)
+        return subfolder + "/" + filename
     else:
         return download_file(filename, subfolder)
 

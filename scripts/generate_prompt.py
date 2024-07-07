@@ -52,7 +52,7 @@ def load_wd14_tagger_model():
                 repo_id,
                 file,
                 subfolder=SUB_DIR,
-                cache_dir=os.path.join(model_dir, SUB_DIR),
+                cache_dir=model_dir + "/" + SUB_DIR,
                 force_download=True,
                 force_filename=file,
             )
