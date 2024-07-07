@@ -6,15 +6,22 @@ Example:
 
 import os
 import torch
-from scripts.data import get_image_list, get_transform
+from scripts.data import get_image_list, get_transform, tensor_to_img, save_image
 from scripts.model import create_model
-from scripts.data import tensor_to_img, save_image
 import argparse
 from tqdm.auto import tqdm
 from kornia.enhance import equalize_clahe
 from PIL import Image
 import numpy as np
 
+model = None
+
+def init_model(use_local=False):
+    global model
+    model_opt = "default"
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = create_model(model_opt, use_local).to(device)
+    model.eval()
 
 # numpy配列の画像を受け取り、線画を生成してnumpy配列で返す
 def generate_sketch(image, clahe_clip=-1, load_size=512):
@@ -28,10 +35,10 @@ def generate_sketch(image, clahe_clip=-1, load_size=512):
         np.ndarray: output image
     """
     # create model
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model_opt = "default"
-    model = create_model(model_opt).to(device)
-    model.eval()
+    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # model_opt = "default"
+    # model = create_model(model_opt).to(device)
+    # model.eval()
     
     aus_resize = None
     if load_size > 0:
@@ -85,7 +92,7 @@ if __name__ == '__main__':
     # create model
     gpu_list = ','.join(str(x) for x in opt.gpu_ids)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = create_model(opt.model).to(device)      # create a model given opt.model and other options
+    model = create_model(opt.model, use_local=True).to(device)      # create a model given opt.model and other options
     model.eval()
     
     for test_path in tqdm(get_image_list(opt.dataroot)):

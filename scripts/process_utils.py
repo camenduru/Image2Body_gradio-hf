@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 from scripts.generate_prompt import load_wd14_tagger_model, generate_tags, preprocess_image as wd14_preprocess_image
 from scripts.lineart_util import scribble_xdog, get_sketch, canny
+from scripts.anime import init_model
 import torch
 from diffusers import StableDiffusionPipeline, StableDiffusionControlNetPipeline, ControlNetModel, UniPCMultistepScheduler, AutoencoderKL
 import gc
@@ -32,8 +33,9 @@ def ensure_rgb(image):
         return image.convert('RGB')
     return image
 
-def initialize(_use_local, use_gpu):
-    # load_dotenv()
+def initialize(_use_local=False, use_gpu=False, use_dotenv=False):
+    if use_dotenv:
+        load_dotenv()
     global model, sotai_gen_pipe, refine_gen_pipe, use_local, device, torch_dtype
     device = "cuda" if use_gpu and torch.cuda.is_available() else "cpu"
     torch_dtype = torch.float16 if device == "cuda" else torch.float32
@@ -41,6 +43,7 @@ def initialize(_use_local, use_gpu):
     print('')
     print(f"Device: {device}, Local model: {_use_local}")
     print('')
+    init_model(use_local)
     model = load_wd14_tagger_model()
     sotai_gen_pipe = initialize_sotai_model()
     refine_gen_pipe = initialize_refine_model()
@@ -53,8 +56,8 @@ def initialize_sotai_model():
     global device, torch_dtype
 
     sotai_sd_model_path = get_file_path(os.environ["sotai_sd_model_name"], subfolder=os.environ["sd_models_dir"])
-    # controlnet_path1 =  get_file_path(os.environ["controlnet_name1"], subfolder=os.environ["controlnet_dir2"])
-    controlnet_path1 =  get_file_path(os.environ["controlnet_name2"], subfolder=os.environ["controlnet_dir1"])
+    controlnet_path1 =  get_file_path(os.environ["controlnet_name1"], subfolder=os.environ["controlnet_dir2"])
+    # controlnet_path1 =  get_file_path(os.environ["controlnet_name2"], subfolder=os.environ["controlnet_dir1"])
     controlnet_path2 =  get_file_path(os.environ["controlnet_name2"], subfolder=os.environ["controlnet_dir1"])
     print(use_local, controlnet_path1)
 
@@ -229,7 +232,7 @@ def generate_sotai_image(input_image: Image.Image, output_width: int, output_hei
             denoising_strength=0.13,
             num_images_per_prompt=1,  # Equivalent to batch_size
             guess_mode=[True, True],  # Equivalent to pixel_perfect
-            controlnet_conditioning_scale=[1.2, 1.3],  # 各ControlNetの重み
+            controlnet_conditioning_scale=[1.4, 1.3],  # 各ControlNetの重み
             guidance_start=[0.0, 0.0],
             guidance_end=[1.0, 1.0],
         )

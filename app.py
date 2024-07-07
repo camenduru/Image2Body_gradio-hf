@@ -79,7 +79,7 @@ def worker():
             if task.task_id in active_tasks:
                 future = executor.submit(process_task, task)
                 task_futures[task.task_id] = future
-            update_queue_status(f'Task started: {task.task_id}')
+            update_queue_status(f'Task processing: {task.task_id}')
         except Exception as e:
             print(f"Worker error: {str(e)}")
         finally:
@@ -187,7 +187,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Server options.')
     parser.add_argument('--use_local', action='store_true', help='Use local model')
     parser.add_argument('--use_gpu', action='store_true', help='Set to True to use GPU but if not available, it will use CPU')
+    parser.add_argument('--use_dotenv', action='store_true', help='Use .env file for environment variables')
     args = parser.parse_args()
     
-    initialize(args.use_local, args.use_gpu)
-    socketio.run(app, debug=True, host='0.0.0.0', port=80)
+    initialize(args.use_local, args.use_gpu, args.use_dotenv)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000)

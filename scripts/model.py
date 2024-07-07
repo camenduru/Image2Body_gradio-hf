@@ -144,7 +144,7 @@ class Upsample(nn.Module):
         return x
 
 
-def create_model(model):
+def create_model(model, use_local):
     """Create a model for anime2sketch
     hardcoding the options for simplicity
     """
@@ -156,7 +156,10 @@ def create_model(model):
     cwd = os.getcwd() # 現在のディレクトリを保存
     os.chdir(os.path.dirname(__file__)) # このファイルのディレクトリに移動
     if model == 'default':
-        model_path = download_file("netG.pth", subfolder="models/Anime2Sketch")
+        model_path = (lambda filename, subfolder: os.path.join(subfolder, filename) if use_local else download_file(filename, subfolder)) \
+                        ("netG.pth", "models/Anime2Sketch")
+        # model_path = ((filename, subfolder) => if (use_local) os.path.join(subfolder, filename) else download_file(filename, subfolder))("netG.pth", "models/Anime2Sketch") // JavaScript
+
         ckpt = torch.load(model_path)
         for key in list(ckpt.keys()):
             if 'module.' in key:
