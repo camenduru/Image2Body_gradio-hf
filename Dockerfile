@@ -46,5 +46,12 @@ RUN echo '#!/bin/bash\nredis-server --daemonize yes\npython app.py' > /app/start
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
+# 環境変数を設定
+ENV REDIS_HOST=redis
+ENV REDIS_PORT=6379
+
+# ポートを指定
+EXPOSE 7860
+
 # 起動コマンドを変更
 CMD ["/app/start.sh"]

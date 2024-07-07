@@ -28,7 +28,7 @@ CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Redisクライアントの初期化（レート制限とキャッシュのため）
-redis_client = redis.Redis(host='localhost', port=6379, db=0)
+redis_client = redis.Redis(host=os.environ.get('REDIS_HOST', 'localhost'), port=int(os.environ.get('REDIS_PORT', 6379)), db=0)
 
 # レート制限の設定
 limiter = Limiter(
