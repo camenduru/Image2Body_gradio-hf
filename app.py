@@ -24,7 +24,6 @@ from gevent import pywsgi
 from geventwebsocket.handler import WebSocketHandler
 
 app = Flask(__name__)
-# app.secret_key = 'super_secret_key'
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
@@ -207,7 +206,7 @@ def handle_disconnect():
 # ルートパスのGETリクエストに対するハンドラ
 @app.route('/', methods=['GET'])
 def root():
-    return jsonify({"status": "ok", "message": "Server is running"}), 200
+    return render_template("index.html")
 
 # process_refined のエンドポイント
 @app.route('/process_refined', methods=['POST'])
@@ -260,12 +259,11 @@ if __name__ == '__main__':
     parser.add_argument('--use_local', action='store_true', help='Use local model')
     parser.add_argument('--use_gpu', action='store_true', help='Set to True to use GPU but if not available, it will use CPU')
     parser.add_argument('--use_dotenv', action='store_true', help='Use .env file for environment variables')
-    parser.add_argument('--debug', action='store_true', help='Run in debug mode')
 
     args = parser.parse_args()
     
-    # initialize(args.use_local, args.use_gpu, args.use_dotenv)
-    port = int(os.environ['PORT']) if 'PORT' in os.environ else 5000
+    initialize(args.use_local, args.use_gpu, args.use_dotenv)
+    port = int(os.environ.get('PORT', 7860))
     print(f"Starting server on port {port}")
     server = pywsgi.WSGIServer(('0.0.0.0', port), app, handler_class=WebSocketHandler)
     server.serve_forever()
