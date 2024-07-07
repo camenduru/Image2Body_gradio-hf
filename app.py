@@ -30,8 +30,8 @@ redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
 # レート制限の設定
 limiter = Limiter(
-    app,
-    key_func=get_remote_address,
+    get_remote_address,
+    app=app,
     default_limits=["200 per day", "50 per hour"]
 )
 
@@ -189,7 +189,7 @@ def handle_get_task_order(task_id):
     return jsonify({'task_order': task_order})
 
 @socketio.on('connect')
-def handle_connect():
+def handle_connect(auth):
     # クライアント接続数の制限
     if redis_client.get('connected_clients') and int(redis_client.get('connected_clients')) > 100:
         return False  # 接続を拒否

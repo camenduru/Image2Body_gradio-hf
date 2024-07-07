@@ -153,8 +153,6 @@ def create_model(model, use_local):
     net = UnetGenerator(3, 1, 8, 64, norm_layer=norm_layer, use_dropout=False)
 
     import os
-    cwd = os.getcwd() # 現在のディレクトリを保存
-    os.chdir(os.path.dirname(__file__)) # このファイルのディレクトリに移動
     if model == 'default':
         model_path = (lambda filename, subfolder: os.path.join(subfolder, filename) if use_local else download_file(filename, subfolder)) \
                         ("netG.pth", "models/Anime2Sketch")
@@ -166,8 +164,6 @@ def create_model(model, use_local):
                 ckpt[key.replace('module.', '')] = ckpt[key]
                 del ckpt[key]
         net.load_state_dict(ckpt)
-
-        os.chdir(cwd) # 元のディレクトリに戻る
 
     elif model == 'improved':
         ckpt = torch.load('weights/improved.bin', map_location=torch.device('cpu'))
