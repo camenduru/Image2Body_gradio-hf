@@ -261,7 +261,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     
-    # initialize(args.use_local, args.use_gpu, args.use_dotenv)
+    initialize(args.use_local, args.use_gpu, args.use_dotenv)
     port = int(os.environ['PORT']) if 'PORT' in os.environ else 5000
+    print(f"Starting server on port {port}")
     server = pywsgi.WSGIServer(('0.0.0.0', port), app, handler_class=WebSocketHandler)
     server.serve_forever()
