@@ -40,9 +40,9 @@ def initialize(_use_local=False, use_gpu=False, use_dotenv=False):
     device = "cuda" if use_gpu and torch.cuda.is_available() else "cpu"
     torch_dtype = torch.float16 if device == "cuda" else torch.float32
     use_local = _use_local
-    print('')
-    print(f"Device: {device}, Local model: {_use_local}")
-    print('')
+
+    print(f"\nDevice: {device}, Local model: {_use_local}\n")
+
     init_model(use_local)
     model = load_wd14_tagger_model()
     sotai_gen_pipe = initialize_sotai_model()
@@ -59,7 +59,6 @@ def initialize_sotai_model():
     controlnet_path1 =  get_file_path(os.environ["controlnet_name1"], subfolder=os.environ["controlnet_dir2"])
     # controlnet_path1 =  get_file_path(os.environ["controlnet_name2"], subfolder=os.environ["controlnet_dir1"])
     controlnet_path2 =  get_file_path(os.environ["controlnet_name2"], subfolder=os.environ["controlnet_dir1"])
-    print(use_local, controlnet_path1)
 
     # Load the Stable Diffusion model
     sd_pipe = StableDiffusionPipeline.from_single_file(
@@ -294,7 +293,6 @@ def process_image(input_image, mode: str, weight1: float = 0.4, weight2: float =
         image_np = np.array(ensure_rgb(input_image))
         prompt = get_wd_tags([image_np])[0]
         prompt = f"{prompt}"
-        print(prompt)
 
         refined_image = generate_refined_image(prompt, input_image, output_width, output_height, weight1, weight2)
         refined_image = refined_image.convert('RGB')
