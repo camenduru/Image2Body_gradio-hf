@@ -20,6 +20,9 @@ import uuid
 import concurrent.futures
 from scripts.process_utils import *
 
+from gevent import pywsgi
+from geventwebsocket.handler import WebSocketHandler
+
 app = Flask(__name__)
 # app.secret_key = 'super_secret_key'
 CORS(app)
@@ -259,4 +262,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     initialize(args.use_local, args.use_gpu, args.use_dotenv)
-    socketio.run(app, debug=args.debug, host='0.0.0.0', port=os.environ['PORT'])
+    port = int(os.environ['PORT']) if 'PORT' in os.environ else 5000
+    server = pywsgi.WSGIServer(('0.0.0.0', port), app, handler_class=WebSocketHandler)
+    server.serve_forever()
