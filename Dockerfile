@@ -46,7 +46,7 @@ RUN echo '#!/bin/bash\nredis-server --daemonize yes\npython app.py' > /app/start
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 80
+EXPOSE 5000
 
 # 起動コマンドを変更
 CMD ["/app/start.sh"]
