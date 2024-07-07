@@ -19,7 +19,7 @@ model = None
 def init_model(use_local=False):
     global model
     model_opt = "default"
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # issue: nevetherless, use_gpu is False, it still uses GPU
     model = create_model(model_opt, use_local).to(device)
     model.eval()
 

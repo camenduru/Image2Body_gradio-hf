@@ -40,7 +40,7 @@ def get_transform(load_size=0, grayscale=False, method=bic, convert=True):
         transform_list.append(transforms.Grayscale(1))
     if load_size > 0:
         osize = [load_size, load_size]
-        transform_list.append(transforms.Resize(osize, method))
+        transform_list.append(transforms.Resize(osize, method, antialias=False))
     if convert:
         # transform_list += [transforms.ToTensor()]
         if grayscale:

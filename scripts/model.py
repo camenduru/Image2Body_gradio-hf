@@ -154,8 +154,7 @@ def create_model(model, use_local):
 
     import os
     if model == 'default':
-        model_path = (lambda filename, subfolder: os.path.join(subfolder, filename) if use_local else download_file(filename, subfolder)) \
-                        ("netG.pth", "models/Anime2Sketch")
+        model_path = (lambda filename, subfolder: os.path.join(subfolder, filename) if use_local else download_file(filename, subfolder))("netG.pth", "models/Anime2Sketch")
         # model_path = ((filename, subfolder) => if (use_local) os.path.join(subfolder, filename) else download_file(filename, subfolder))("netG.pth", "models/Anime2Sketch") // JavaScript
 
         ckpt = torch.load(model_path)
@@ -176,8 +175,6 @@ def create_model(model, use_local):
             base = base.model[3]
 
         net.load_state_dict(ckpt)
-
-        os.chdir(cwd) # 元のディレクトリに戻る
     
     else:
         raise ValueError(f"model should be one of ['default', 'improved'], but got {model}")
