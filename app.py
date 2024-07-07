@@ -204,46 +204,49 @@ def handle_disconnect():
     redis_client.decr('connected_clients')
 
 # Flaskルート
-@app.route('/', methods=['GET', 'POST'])
+# ルートパスのGETリクエストに対するハンドラ
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({"status": "ok", "message": "Server is running"}), 200
+
+# process_refined のエンドポイント
+@app.route('/process_refined', methods=['POST'])
 def process_refined():
-    if request.method == 'POST':
-        file = request.files['file']
-        weight1 = float(request.form.get('weight1', 0.4))
-        weight2 = float(request.form.get('weight2', 0.3))
-        
-        image = ensure_rgb(Image.open(file.stream))
-        sotai_image, sketch_image = process_image_as_base64(image, "refine", weight1, weight2)
-        
-        return jsonify({
-            'sotai_image': sotai_image,
-            'sketch_image': sketch_image
-        })
+    file = request.files['file']
+    weight1 = float(request.form.get('weight1', 0.4))
+    weight2 = float(request.form.get('weight2', 0.3))
+    
+    image = ensure_rgb(Image.open(file.stream))
+    sotai_image, sketch_image = process_image_as_base64(image, "refine", weight1, weight2)
+    
+    return jsonify({
+        'sotai_image': sotai_image,
+        'sketch_image': sketch_image
+    })
 
-@app.route('/process_original', methods=['GET', 'POST'])
+@app.route('/process_original', methods=['POST'])
 def process_original():
-    if request.method == 'POST':
-        file = request.files['file']
-        
-        image = ensure_rgb(Image.open(file.stream))
-        sotai_image, sketch_image = process_image_as_base64(image, "original")
-        
-        return jsonify({
-            'sotai_image': sotai_image,
-            'sketch_image': sketch_image
-        })
+    file = request.files['file']
+    
+    image = ensure_rgb(Image.open(file.stream))
+    sotai_image, sketch_image = process_image_as_base64(image, "original")
+    
+    return jsonify({
+        'sotai_image': sotai_image,
+        'sketch_image': sketch_image
+    })
 
-@app.route('/process_sketch', methods=['GET', 'POST'])
+@app.route('/process_sketch', methods=['POST'])
 def process_sketch():
-    if request.method == 'POST':
-        file = request.files['file']
-        
-        image = ensure_rgb(Image.open(file.stream))
-        sotai_image, sketch_image = process_image_as_base64(image, "sketch")
-        
-        return jsonify({
-            'sotai_image': sotai_image,
-            'sketch_image': sketch_image
-        })
+    file = request.files['file']
+    
+    image = ensure_rgb(Image.open(file.stream))
+    sotai_image, sketch_image = process_image_as_base64(image, "sketch")
+    
+    return jsonify({
+        'sotai_image': sotai_image,
+        'sketch_image': sketch_image
+    })
 
 # グローバルエラーハンドラー
 @app.errorhandler(Exception)
