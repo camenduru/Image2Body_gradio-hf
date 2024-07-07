@@ -1,5 +1,6 @@
 # CUDA 12.1ベースのUbuntuイメージを使用
-FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu20.04
+# FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu20.04
+FROM ubuntu:20.04
 
 # 環境変数の設定
 ENV DEBIAN_FRONTEND=noninteractive
@@ -42,4 +43,5 @@ USER appuser
 
 EXPOSE 80
 
-CMD ["python", "app.py", "--use_gpu"]
+# CMD ["python", "app.py", "--use_gpu"]
+CMD ["python", "app.py"]
