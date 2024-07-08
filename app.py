@@ -102,6 +102,7 @@ def worker():
         try:
             task = task_queue.get()
             if task.task_id in active_tasks:
+                print(f"Processing task {task.task_id}")
                 future = executor.submit(process_task, task)
                 task_futures[task.task_id] = future
         except Exception as e:
@@ -149,7 +150,7 @@ def submit_task():
 
     # クライアントIPアドレスを取得
     client_ip = get_remote_address()
-    client_id = session.get("sid")
+    # client_id = session.get("sid")
     
     # 同一IPからの同時タスク数を制限
     if tasks_per_client.get(client_ip, 0) >= 2:
