@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, send_file, jsonify, send_from_directory
+from flask import Flask, request as flask_request, render_template, send_file, jsonify, send_from_directory
 from flask_socketio import SocketIO, join_room, leave_room, close_room, rooms, disconnect
 from flask_cors import CORS
 from flask_limiter import Limiter
@@ -155,10 +155,10 @@ def submit_task():
         return jsonify({'error': 'Maximum number of concurrent tasks reached'}), 429
 
     task_id = str(uuid.uuid4())
-    file = request.files['file']
-    mode = request.form.get('mode', 'refine')
-    weight1 = float(request.form.get('weight1', 0.4))
-    weight2 = float(request.form.get('weight2', 0.3))
+    file = flask_request.files['file']
+    mode = flask_request.form.get('mode', 'refine')
+    weight1 = float(flask_request.form.get('weight1', 0.4))
+    weight2 = float(flask_request.form.get('weight2', 0.3))
     
     # ファイルタイプの制限
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
@@ -235,9 +235,9 @@ def root():
 # process_refined のエンドポイント
 @app.route('/process_refined', methods=['POST'])
 def process_refined():
-    file = request.files['file']
-    weight1 = float(request.form.get('weight1', 0.4))
-    weight2 = float(request.form.get('weight2', 0.3))
+    file = flask_request.files['file']
+    weight1 = float(flask_request.form.get('weight1', 0.4))
+    weight2 = float(flask_request.form.get('weight2', 0.3))
     
     image = ensure_rgb(Image.open(file.stream))
     sotai_image, sketch_image = process_image_as_base64(image, "refine", weight1, weight2)
@@ -249,7 +249,7 @@ def process_refined():
 
 @app.route('/process_original', methods=['POST'])
 def process_original():
-    file = request.files['file']
+    file = flask_request.files['file']
     
     image = ensure_rgb(Image.open(file.stream))
     sotai_image, sketch_image = process_image_as_base64(image, "original")
@@ -261,7 +261,7 @@ def process_original():
 
 @app.route('/process_sketch', methods=['POST'])
 def process_sketch():
-    file = request.files['file']
+    file = flask_request.files['file']
     
     image = ensure_rgb(Image.open(file.stream))
     sotai_image, sketch_image = process_image_as_base64(image, "sketch")
