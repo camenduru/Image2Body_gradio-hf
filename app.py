@@ -40,7 +40,7 @@ active_tasks = {}
 task_futures = {}
 
 # ThreadPoolExecutorの作成
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=8) # 8vCPUのインスタンスを使用
 
 class Task:
     def __init__(self, task_id, mode, weight1, weight2, file_data, client_ip):
@@ -51,12 +51,14 @@ class Task:
         self.file_data = file_data
         self.cancel_flag = False
         self.client_ip = client_ip
+        self.is_processing = False
 
 def update_queue_status(message=None):
     socketio.emit('queue_update', {'active_tasks': len(active_tasks), 'message': message})
 
 def process_task(task):
     try:
+        task.is_processing = True
         # ファイルデータをPIL Imageに変換
         image = Image.open(io.BytesIO(task.file_data))
         image = ensure_rgb(image)
@@ -81,6 +83,7 @@ def process_task(task):
         if not task.cancel_flag:
             socketio.emit('task_error', {'task_id': task.task_id, 'error': str(e)})
     finally:
+        task.is_processing = False
         if task.task_id in active_tasks:
             del active_tasks[task.task_id]
         if task.task_id in task_futures:
@@ -128,13 +131,15 @@ def handle_disconnect():
     # キャンセル処理：接続が切断された場合、そのクライアントに関連するタスクをキャンセル。ただし、1番目で処理中のタスクはキャンセルしない
     client_ip = get_remote_address()
     for task_id, task in list(active_tasks.items()):
-        if task.client_ip == client_ip and get_active_task_order(task_id) > 0:
+        if task.client_ip == client_ip and not task.is_processing:
             task.cancel_flag = True
             if task_id in task_futures:
                 task_futures[task_id].cancel()
                 del task_futures[task_id]
             del active_tasks[task_id]
             tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) - 1
+    
+    emit('queue_update', {'active_tasks': len(active_tasks)})
 
 @app.route('/submit_task', methods=['POST'])
 @limiter.limit("10 per minute")  # 1分間に10回までのリクエストに制限
@@ -203,14 +208,22 @@ def cancel_task(task_id):
                 return jsonify({'message': 'Task cancellation requested for queued task'})
         return jsonify({'error': 'Task not found'}), 404
 
+@app.route('/task_status/<task_id>', methods=['GET'])
+def task_status(task_id):
+    task = active_tasks.get(task_id, None)
+    if task:
+        return jsonify({'task_id': task_id, 'is_processing': task.is_processing})
+    return jsonify({'error': 'Task not found'}), 404
+
 def get_active_task_order(task_id):
     return list(active_tasks.keys()).index(task_id) if task_id in active_tasks else None
 
 # get_task_orderイベントハンドラー
 @app.route('/get_task_order/<task_id>', methods=['GET'])
 def handle_get_task_order(task_id):
-    task_order = get_active_task_order(task_id)
-    return jsonify({'task_order': task_order})
+    if task_id not in active_tasks:
+        return jsonify({'error': 'Task not found'}), 404
+    return jsonify({'task_order': get_active_task_order(task_id)})
 
 # Flaskルート
 # ルートパスのGETリクエストに対するハンドラ
