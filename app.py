@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, send_file, jsonify, send_from_directory
 from flask_socketio import SocketIO, join_room, leave_room, close_room, rooms, disconnect
+from flask_socketio import request as socketio_request
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -59,7 +60,7 @@ def update_queue_status(message):
 
 def process_task(task):
     try:
-        client_id = request.sid
+        client_id = socketio_request.sid
         task.is_processing = True
         # ファイルデータをPIL Imageに変換
         image = Image.open(io.BytesIO(task.file_data))
@@ -118,14 +119,14 @@ connected_clients = 0
 tasks_per_client = {}
 @socketio.on('connect')
 def handle_connect(auth):
-    client_id = request.sid  # クライアントIDを取得
+    client_id = socketio_request.sid  # クライアントIDを取得
     join_room(client_id)  # クライアントを自身のルームに入れる
     global connected_clients
     connected_clients += 1
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    client_id = request.sid  # クライアントIDを取得
+    client_id = socketio_request.sid  # クライアントIDを取得
     leave_room(client_id)  # クライアントをルームから出す
     global connected_clients
     connected_clients -= 1
@@ -148,7 +149,7 @@ def submit_task():
 
     # クライアントIPアドレスを取得
     client_ip = get_remote_address()
-    client_id = request.sid  # クライアントIDを取得
+    client_id = socketio_request.sid  # クライアントIDを取得
     
     # 同一IPからの同時タスク数を制限
     if tasks_per_client.get(client_ip, 0) >= 2:
