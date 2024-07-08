@@ -42,7 +42,7 @@ active_tasks = {}
 task_futures = {}
 
 # ThreadPoolExecutorの作成
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=2) # 8vCPUのインスタンスを使用
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=1) # 8vCPUのインスタンスを使用
 
 gpu_lock = threading.Lock()
 
@@ -245,12 +245,11 @@ def task_status(task_id):
 
 def get_active_task_order(task_id):
     non_processing_task_ids = [tid for tid, task in active_tasks.items() if not task.is_processing]
-    return non_processing_task_ids.index(task_id) if task_id in non_processing_task_ids else 0
+    return non_processing_task_ids.index(task_id)+1 if task_id in non_processing_task_ids else 0
 
 # get_task_orderイベントハンドラー
 @app.route('/get_task_order/<task_id>', methods=['GET'])
 def handle_get_task_order(task_id):
-    print(f'Active tasks order: {task_id}, Active tasks: {active_tasks.keys()}')
     if task_id  in active_tasks.keys():
         return jsonify({'task_order': get_active_task_order(task_id)})
     else:
