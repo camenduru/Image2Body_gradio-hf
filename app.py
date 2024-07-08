@@ -42,7 +42,7 @@ active_tasks = {}
 task_futures = {}
 
 # ThreadPoolExecutorの作成
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=os.environ.get('MAX_WORKERS', 4))
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=int(os.environ.get('MAX_WORKERS', 4)))
 
 gpu_lock = threading.Lock()
 
