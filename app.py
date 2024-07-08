@@ -125,6 +125,16 @@ def handle_connect(auth):
 def handle_disconnect():
     global connected_clients
     connected_clients -= 1
+    # キャンセル処理：接続が切断された場合、そのクライアントに関連するタスクをキャンセル。ただし、1番目で処理中のタスクはキャンセルしない
+    client_ip = get_remote_address()
+    for task_id, task in list(active_tasks.items()):
+        if task.client_ip == client_ip and get_active_task_order(task_id) > 0:
+            task.cancel_flag = True
+            if task_id in task_futures:
+                task_futures[task_id].cancel()
+                del task_futures[task_id]
+            del active_tasks[task_id]
+            tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) - 1
 
 @app.route('/submit_task', methods=['POST'])
 @limiter.limit("10 per minute")  # 1分間に10回までのリクエストに制限
