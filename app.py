@@ -87,8 +87,8 @@ def process_task(task):
             del task_futures[task.task_id]
             
         # タスク数をデクリメント
-        client_ip = task.client_ip  # この行は Task クラスに client_ip 属性を追加する必要があります
-        redis_client.decr(f'tasks:{client_ip}')
+        client_ip = task.client_ip
+        tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) - 1
         
         update_queue_status('Task completed or cancelled')
 

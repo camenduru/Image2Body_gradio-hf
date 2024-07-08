@@ -16,7 +16,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.10 \
     python3.10-dev \
     python3.10-distutils \
-    redis-server \
     && ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -38,13 +37,9 @@ RUN pip install --no-cache-dir -r requirements.txt \
 # アプリケーションのコピー
 COPY . /app
 
-# Redis の起動スクリプトを作成
-RUN echo '#!/bin/bash\nredis-server --daemonize yes\npython app.py' > /app/start.sh \
-    && chmod +x /app/start.sh
-
 # 非rootユーザーの作成と切り替え
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
 # 起動コマンドを変更
-CMD ["/app/start.sh"]
+CMD ["python", "app.py"]
