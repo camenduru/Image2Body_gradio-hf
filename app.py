@@ -60,8 +60,9 @@ def update_queue_status(message):
 
 def process_task(task):
     try:
-        # update_queue_status(str("sid" in session))
-        # client_id = session.get("sid")
+        update_queue_status("sid")
+        update_queue_status(str("sid" in session))
+        client_id = session.get("sid")
         task.is_processing = True
         # ファイルデータをPIL Imageに変換
         image = Image.open(io.BytesIO(task.file_data))
@@ -82,7 +83,7 @@ def process_task(task):
             'task_id': task.task_id, 
             'sotai_image': sotai_image, 
             'sketch_image': sketch_image
-        })
+        }, to=client_id)
     except Exception as e:
         print(f"Task error: {str(e)}")
         if not task.cancel_flag:
