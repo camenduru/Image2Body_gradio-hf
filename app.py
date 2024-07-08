@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template, send_file, jsonify, send_from_directory
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, join_room, leave_room, close_room, rooms, disconnect
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -54,11 +54,12 @@ class Task:
         self.is_processing = False
 
 # キューの状態を通知
-def update_queue_status(message=None, client_ip=None):
-    socketio.emit('queue_update', {'active_tasks': len(active_tasks), 'message': message}, room=client_ip)
+def update_queue_status(message):
+    socketio.emit('queue_update', {'active_tasks': len(active_tasks), 'message': message})
 
 def process_task(task):
     try:
+        client_id = request.sid
         task.is_processing = True
         # ファイルデータをPIL Imageに変換
         image = Image.open(io.BytesIO(task.file_data))
@@ -79,10 +80,10 @@ def process_task(task):
             'task_id': task.task_id, 
             'sotai_image': sotai_image, 
             'sketch_image': sketch_image
-        }, room=task.client_ip)
+        }, to=client_id)
     except Exception as e:
         if not task.cancel_flag:
-            socketio.emit('task_error', {'task_id': task.task_id, 'error': str(e)}, room=task.client_ip)
+            socketio.emit('task_error', {'task_id': task.task_id, 'error': str(e)}, to=client_id)
     finally:
         task.is_processing = False
         if task.task_id in active_tasks:
@@ -115,16 +116,17 @@ threading.Thread(target=worker, daemon=True).start()
 # グローバル変数を使用して接続数とタスク数を管理
 connected_clients = 0
 tasks_per_client = {}
-
 @socketio.on('connect')
 def handle_connect(auth):
+    client_id = request.sid  # クライアントIDを取得
+    join_room(client_id)  # クライアントを自身のルームに入れる
     global connected_clients
-    if connected_clients > 100:
-        return False  # 接続を拒否
     connected_clients += 1
 
 @socketio.on('disconnect')
 def handle_disconnect():
+    client_id = request.sid  # クライアントIDを取得
+    leave_room(client_id)  # クライアントをルームから出す
     global connected_clients
     connected_clients -= 1
     # キャンセル処理：接続が切断された場合、そのクライアントに関連するタスクをキャンセル。ただし、1番目で処理中のタスクはキャンセルしない
@@ -146,6 +148,7 @@ def submit_task():
 
     # クライアントIPアドレスを取得
     client_ip = get_remote_address()
+    client_id = request.sid  # クライアントIDを取得
     
     # 同一IPからの同時タスク数を制限
     if tasks_per_client.get(client_ip, 0) >= 2:
@@ -171,6 +174,8 @@ def submit_task():
     
     # 同一IPからのタスク数をインクリメント
     tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) + 1
+
+    update_queue_status('Task submitted')
     
     queue_size = task_queue.qsize()
     return jsonify({'task_id': task_id, 'queue_size': queue_size})
@@ -192,7 +197,7 @@ def cancel_task(task_id):
         del active_tasks[task_id]
         # タスク数をデクリメント
         tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) - 1
-        update_queue_status('Task cancelled', client_ip)
+        update_queue_status('Task cancelled')
         return jsonify({'message': 'Task cancellation requested'})
     else:
         for task in list(task_queue.queue):
