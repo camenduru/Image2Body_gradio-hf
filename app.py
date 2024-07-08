@@ -23,6 +23,7 @@ from gevent import pywsgi
 from geventwebsocket.handler import WebSocketHandler
 
 app = Flask(__name__)
+app.secret_key = 'user'
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
@@ -59,13 +60,12 @@ def update_queue_status(message):
 
 def process_task(task):
     try:
+        update_queue_status(str("sid" in session))
         client_id = session.get("sid")
-        print(f"client_id: {client_id}")
         task.is_processing = True
         # ファイルデータをPIL Imageに変換
         image = Image.open(io.BytesIO(task.file_data))
         image = ensure_rgb(image)
-        update_queue_status('Task 1')
         
         # キャンセルチェック
         if task.cancel_flag:
@@ -73,12 +73,10 @@ def process_task(task):
 
         # 画像処理ロジックを呼び出す
         sotai_image, sketch_image = process_image_as_base64(image, task.mode, task.weight1, task.weight2)
-        update_queue_status('Task 2')
 
         # キャンセルチェック
         if task.cancel_flag:
             return
-        update_queue_status('Task 3')
 
         socketio.emit('task_complete', {
             'task_id': task.task_id, 
@@ -86,8 +84,8 @@ def process_task(task):
             'sketch_image': sketch_image
         }, to=client_id)
     except Exception as e:
-        # print(f"Task error: {str(e)}")
-        # if not task.cancel_flag:
+        print(f"Task error: {str(e)}")
+        if not task.cancel_flag:
             socketio.emit('task_error', {'task_id': task.task_id, 'error': str(e)}, to=client_id)
     finally:
         task.is_processing = False
@@ -100,7 +98,7 @@ def process_task(task):
         client_ip = task.client_ip
         tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) - 1
         
-        update_queue_status('Task completed or cancelled4')
+        update_queue_status('Task completed or cancelled')
 
 def worker():
     while True:
