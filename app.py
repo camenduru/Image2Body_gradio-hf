@@ -53,8 +53,9 @@ class Task:
         self.client_ip = client_ip
         self.is_processing = False
 
-def update_queue_status(message=None):
-    socketio.emit('queue_update', {'active_tasks': len(active_tasks), 'message': message})
+# キューの状態を通知
+def update_queue_status(message=None, client_ip=None):
+    socketio.emit('queue_update', {'active_tasks': len(active_tasks), 'message': message}, room=client_ip)
 
 def process_task(task):
     try:
@@ -78,10 +79,10 @@ def process_task(task):
             'task_id': task.task_id, 
             'sotai_image': sotai_image, 
             'sketch_image': sketch_image
-        })
+        }, room=task.client_ip)
     except Exception as e:
         if not task.cancel_flag:
-            socketio.emit('task_error', {'task_id': task.task_id, 'error': str(e)})
+            socketio.emit('task_error', {'task_id': task.task_id, 'error': str(e)}, room=task.client_ip)
     finally:
         task.is_processing = False
         if task.task_id in active_tasks:
@@ -102,7 +103,6 @@ def worker():
             if task.task_id in active_tasks:
                 future = executor.submit(process_task, task)
                 task_futures[task.task_id] = future
-            update_queue_status(f'Task processing: {task.task_id}')
         except Exception as e:
             print(f"Worker error: {str(e)}")
         finally:
@@ -122,7 +122,6 @@ def handle_connect(auth):
     if connected_clients > 100:
         return False  # 接続を拒否
     connected_clients += 1
-    emit('queue_update', {'active_tasks': len(active_tasks), 'active_task_order': None})
 
 @socketio.on('disconnect')
 def handle_disconnect():
@@ -138,8 +137,6 @@ def handle_disconnect():
                 del task_futures[task_id]
             del active_tasks[task_id]
             tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) - 1
-    
-    emit('queue_update', {'active_tasks': len(active_tasks)})
 
 @app.route('/submit_task', methods=['POST'])
 @limiter.limit("10 per minute")  # 1分間に10回までのリクエストに制限
@@ -175,8 +172,6 @@ def submit_task():
     # 同一IPからのタスク数をインクリメント
     tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) + 1
     
-    update_queue_status(f'Task submitted: {task_id}')
-    
     queue_size = task_queue.qsize()
     return jsonify({'task_id': task_id, 'queue_size': queue_size})
 
@@ -197,7 +192,7 @@ def cancel_task(task_id):
         del active_tasks[task_id]
         # タスク数をデクリメント
         tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) - 1
-        update_queue_status('Task cancelled')
+        update_queue_status('Task cancelled', client_ip)
         return jsonify({'message': 'Task cancellation requested'})
     else:
         for task in list(task_queue.queue):
@@ -217,7 +212,7 @@ def task_status(task_id):
 
 def get_active_task_order(task_id):
     non_processing_tasks = [tid for tid, task in active_tasks.items() if not task.is_processing]
-    return non_processing_tasks.index(task_id) if task_id in non_processing_tasks else None
+    return non_processing_tasks.index(task_id) if task_id in non_processing_tasks else 0
 
 # get_task_orderイベントハンドラー
 @app.route('/get_task_order/<task_id>', methods=['GET'])
