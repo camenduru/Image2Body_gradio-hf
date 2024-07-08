@@ -244,8 +244,13 @@ def task_status(task_id):
         return jsonify({'error': str(e)}), 500
 
 def get_active_task_order(task_id):
+    processing_task_ids = [tid for tid, task in active_tasks.items() if task.is_processing]
     non_processing_task_ids = [tid for tid, task in active_tasks.items() if not task.is_processing]
-    return non_processing_task_ids.index(task_id)+1 if task_id in non_processing_task_ids else 0
+    if len(processing_task_ids) == 0:
+        task_order = 0
+    else:
+        task_order = non_processing_task_ids.index(task_id) + 1
+    return task_order
 
 # get_task_orderイベントハンドラー
 @app.route('/get_task_order/<task_id>', methods=['GET'])
