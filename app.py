@@ -65,6 +65,7 @@ def process_task(task):
         # ファイルデータをPIL Imageに変換
         image = Image.open(io.BytesIO(task.file_data))
         image = ensure_rgb(image)
+        update_queue_status('Task 1')
         
         # キャンセルチェック
         if task.cancel_flag:
@@ -72,10 +73,12 @@ def process_task(task):
 
         # 画像処理ロジックを呼び出す
         sotai_image, sketch_image = process_image_as_base64(image, task.mode, task.weight1, task.weight2)
+        update_queue_status('Task 2')
 
         # キャンセルチェック
         if task.cancel_flag:
             return
+        update_queue_status('Task 3')
 
         socketio.emit('task_complete', {
             'task_id': task.task_id, 
@@ -97,7 +100,7 @@ def process_task(task):
         client_ip = task.client_ip
         tasks_per_client[client_ip] = tasks_per_client.get(client_ip, 0) - 1
         
-        update_queue_status('Task completed or cancelled')
+        update_queue_status('Task completed or cancelled4')
 
 def worker():
     while True:
