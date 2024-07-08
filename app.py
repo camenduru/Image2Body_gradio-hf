@@ -1,4 +1,4 @@
-from flask import Flask, request as flask_request, render_template, send_file, jsonify, send_from_directory
+from flask import Flask, request as socketio, render_template, send_file, jsonify, send_from_directory
 from flask_socketio import SocketIO, join_room, leave_room, close_room, rooms, disconnect
 from flask_cors import CORS
 from flask_limiter import Limiter
@@ -59,7 +59,7 @@ def update_queue_status(message):
 
 def process_task(task):
     try:
-        client_id = request.sid
+        client_id = socketio.sid
         task.is_processing = True
         # ファイルデータをPIL Imageに変換
         image = Image.open(io.BytesIO(task.file_data))
@@ -118,14 +118,14 @@ connected_clients = 0
 tasks_per_client = {}
 @socketio.on('connect')
 def handle_connect(auth):
-    client_id = request.sid  # クライアントIDを取得
+    client_id = socketio.sid  # クライアントIDを取得
     join_room(client_id)  # クライアントを自身のルームに入れる
     global connected_clients
     connected_clients += 1
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    client_id = request.sid  # クライアントIDを取得
+    client_id = socketio.sid  # クライアントIDを取得
     leave_room(client_id)  # クライアントをルームから出す
     global connected_clients
     connected_clients -= 1
@@ -148,17 +148,17 @@ def submit_task():
 
     # クライアントIPアドレスを取得
     client_ip = get_remote_address()
-    client_id = request.sid  # クライアントIDを取得
+    client_id = socketio.sid  # クライアントIDを取得
     
     # 同一IPからの同時タスク数を制限
     if tasks_per_client.get(client_ip, 0) >= 2:
         return jsonify({'error': 'Maximum number of concurrent tasks reached'}), 429
 
     task_id = str(uuid.uuid4())
-    file = flask_request.files['file']
-    mode = flask_request.form.get('mode', 'refine')
-    weight1 = float(flask_request.form.get('weight1', 0.4))
-    weight2 = float(flask_request.form.get('weight2', 0.3))
+    file = socketio.files['file']
+    mode = socketio.form.get('mode', 'refine')
+    weight1 = float(socketio.form.get('weight1', 0.4))
+    weight2 = float(socketio.form.get('weight2', 0.3))
     
     # ファイルタイプの制限
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
@@ -235,9 +235,9 @@ def root():
 # process_refined のエンドポイント
 @app.route('/process_refined', methods=['POST'])
 def process_refined():
-    file = flask_request.files['file']
-    weight1 = float(flask_request.form.get('weight1', 0.4))
-    weight2 = float(flask_request.form.get('weight2', 0.3))
+    file = socketio.files['file']
+    weight1 = float(socketio.form.get('weight1', 0.4))
+    weight2 = float(socketio.form.get('weight2', 0.3))
     
     image = ensure_rgb(Image.open(file.stream))
     sotai_image, sketch_image = process_image_as_base64(image, "refine", weight1, weight2)
@@ -249,7 +249,7 @@ def process_refined():
 
 @app.route('/process_original', methods=['POST'])
 def process_original():
-    file = flask_request.files['file']
+    file = socketio.files['file']
     
     image = ensure_rgb(Image.open(file.stream))
     sotai_image, sketch_image = process_image_as_base64(image, "original")
@@ -261,7 +261,7 @@ def process_original():
 
 @app.route('/process_sketch', methods=['POST'])
 def process_sketch():
-    file = flask_request.files['file']
+    file = socketio.files['file']
     
     image = ensure_rgb(Image.open(file.stream))
     sotai_image, sketch_image = process_image_as_base64(image, "sketch")
