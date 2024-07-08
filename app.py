@@ -83,8 +83,8 @@ def process_task(task):
             'sketch_image': sketch_image
         }, to=client_id)
     except Exception as e:
-        print(f"Task error: {str(e)}")
-        if not task.cancel_flag:
+        # print(f"Task error: {str(e)}")
+        # if not task.cancel_flag:
             socketio.emit('task_error', {'task_id': task.task_id, 'error': str(e)}, to=client_id)
     finally:
         task.is_processing = False
