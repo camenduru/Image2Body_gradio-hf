@@ -216,7 +216,8 @@ def task_status(task_id):
     return jsonify({'error': 'Task not found'}), 404
 
 def get_active_task_order(task_id):
-    return list(active_tasks.keys()).index(task_id) if task_id in active_tasks else None
+    non_processing_tasks = [tid for tid, task in active_tasks.items() if not task.is_processing]
+    return non_processing_tasks.index(task_id) if task_id in non_processing_tasks else None
 
 # get_task_orderイベントハンドラー
 @app.route('/get_task_order/<task_id>', methods=['GET'])
