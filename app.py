@@ -60,6 +60,7 @@ def update_queue_status(message):
 def process_task(task):
     try:
         client_id = session.get("sid")
+        print(f"client_id: {client_id}")
         task.is_processing = True
         # ファイルデータをPIL Imageに変換
         image = Image.open(io.BytesIO(task.file_data))
@@ -71,7 +72,7 @@ def process_task(task):
 
         # 画像処理ロジックを呼び出す
         sotai_image, sketch_image = process_image_as_base64(image, task.mode, task.weight1, task.weight2)
-        
+
         # キャンセルチェック
         if task.cancel_flag:
             return
@@ -82,6 +83,7 @@ def process_task(task):
             'sketch_image': sketch_image
         }, to=client_id)
     except Exception as e:
+        print(f"Task error: {str(e)}")
         if not task.cancel_flag:
             socketio.emit('task_error', {'task_id': task.task_id, 'error': str(e)}, to=client_id)
     finally:
