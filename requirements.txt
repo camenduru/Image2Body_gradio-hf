@@ -3,9 +3,9 @@ torch==2.2.0
 torchvision==0.17.0
 torchaudio==2.2.0
 diffusers==0.27.0 # pth file cannot be loaded in the latest version
-Flask==2.3.0
+Flask==3.0.3
 Flask-Cors==4.0.0
-Flask-SocketIO==4.3.0
+Flask-SocketIO==5.3.6
 gradio==4.36.1
 huggingface_hub==0.23.2
 kornia==0.7.1
