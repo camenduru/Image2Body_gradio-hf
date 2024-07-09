@@ -42,4 +42,4 @@ RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
 # 起動コマンドを変更
-CMD ["python", "app.py"]
+CMD ["python", "app.py", "--use_gpu"]
