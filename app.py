@@ -7,6 +7,8 @@ from scripts.process_utils import initialize, process_image_as_base64
 from scripts.anime import init_model
 from scripts.generate_prompt import load_wd14_tagger_model
 
+import spaces
+
 # 初期化
 initialize(_use_local=False, use_gpu=True, use_dotenv=False)
 init_model(use_local=False)
@@ -22,12 +24,10 @@ def process_image(input_image, mode, weight1, weight2):
     
     return sotai_pil, sketch_pil
 
+@spaces.GPU
 def gradio_process_image(input_image, mode, weight1, weight2):
     sotai_image, sketch_image = process_image(input_image, mode, weight1, weight2)
     return sotai_image, sketch_image
-
-# pwdを取得
-print(os.getcwd())
 
 # サンプル画像のパスリスト
 sample_images = [
