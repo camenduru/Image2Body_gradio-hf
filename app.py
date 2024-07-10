@@ -7,6 +7,9 @@ from scripts.process_utils import initialize, process_image_as_base64
 from scripts.anime import init_model
 from scripts.generate_prompt import load_wd14_tagger_model
 
+# from dotenv import load_dotenv
+# load_dotenv()
+
 # 初期化
 initialize(_use_local=False, use_gpu=True)
 init_model(use_local=False)
@@ -72,7 +75,7 @@ with gr.Blocks() as demo:
             sketch_output = gr.Image(type="pil", label="Sketch Image")
     
     gr.Examples(
-        examples=sample_images,
+        examples=[[path, "original", 0.6, 0.05] for path in sample_images],
         inputs=[input_image, mode, weight1, weight2],
         outputs=[sotai_output, sketch_output],
         fn=gradio_process_image,
