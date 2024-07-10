@@ -14,6 +14,8 @@ from peft import PeftModel
 from dotenv import load_dotenv
 from scripts.hf_utils import download_file
 
+import spaces
+
 # グローバル変数
 use_local = False
 model = None
@@ -33,6 +35,7 @@ def ensure_rgb(image):
         return image.convert('RGB')
     return image
 
+@spaces.GPU
 def initialize(_use_local=False, use_gpu=False, use_dotenv=False):
     if use_dotenv:
         load_dotenv()
@@ -52,6 +55,7 @@ def load_lora(pipeline, lora_path, alpha=0.75):
     pipeline.load_lora_weights(lora_path)
     pipeline.fuse_lora(lora_scale=alpha)
 
+@spaces.GPU
 def initialize_sotai_model():
     global device, torch_dtype
 
@@ -65,19 +69,19 @@ def initialize_sotai_model():
         sotai_sd_model_path,
         torch_dtype=torch_dtype,
         use_safetensors=True
-    )
+    ).to(device)
     
     # Load the ControlNet model
     controlnet1 = ControlNetModel.from_single_file(
         controlnet_path1,
         torch_dtype=torch_dtype
-    )
+    ).to(device)
     
     # Load the ControlNet model
     controlnet2 = ControlNetModel.from_single_file(
         controlnet_path2,
         torch_dtype=torch_dtype
-    )
+    ).to(device)
 
     # Create the ControlNet pipeline
     sotai_gen_pipe = StableDiffusionControlNetPipeline(
@@ -89,7 +93,7 @@ def initialize_sotai_model():
         safety_checker=sd_pipe.safety_checker,
         feature_extractor=sd_pipe.feature_extractor,
         controlnet=[controlnet1, controlnet2]
-    )
+    ).to(device)
 
     # LoRAの適用
     lora_names = [
@@ -106,6 +110,7 @@ def initialize_sotai_model():
 
     return sotai_gen_pipe
 
+@spaces.GPU
 def initialize_refine_model():
     global device, torch_dtype
 
@@ -119,23 +124,23 @@ def initialize_refine_model():
         refine_sd_model_path,
         torch_dtype=torch_dtype,
         use_safetensors=True
-    )
+    ).to(device)
     
     # controlnet_path = "models/cn/control_v11p_sd15_canny.pth"
     controlnet1 = ControlNetModel.from_single_file(
         controlnet_path3,
         torch_dtype=torch_dtype
-    )
+    ).to(device)
     
     # Load the ControlNet model
     controlnet2 = ControlNetModel.from_single_file(
         controlnet_path4,
         torch_dtype=torch_dtype
-    )
+    ).to(device)
 
     # Create the ControlNet pipeline
     refine_gen_pipe = StableDiffusionControlNetPipeline(
-        vae=AutoencoderKL.from_single_file(vae_path, torch_dtype=torch_dtype),
+        vae=AutoencoderKL.from_single_file(vae_path, torch_dtype=torch_dtype).to(device),
         text_encoder=sd_pipe.text_encoder,
         tokenizer=sd_pipe.tokenizer,
         unet=sd_pipe.unet,
@@ -143,7 +148,7 @@ def initialize_refine_model():
         safety_checker=sd_pipe.safety_checker,
         feature_extractor=sd_pipe.feature_extractor,
         controlnet=[controlnet1, controlnet2],  # 複数のControlNetを指定
-    )
+    ).to(device)
 
     # スケジューラーの設定
     refine_gen_pipe.scheduler = UniPCMultistepScheduler.from_config(refine_gen_pipe.scheduler.config)
@@ -201,6 +206,7 @@ def create_rgba_image(binary_image: np.ndarray, color: list) -> Image.Image:
     rgba_image[:, :, 3] = binary_image
     return Image.fromarray(rgba_image, 'RGBA')
 
+@spaces.GPU
 def generate_sotai_image(input_image: Image.Image, output_width: int, output_height: int) -> Image.Image:
     input_image = ensure_rgb(input_image)
     global sotai_gen_pipe
@@ -245,6 +251,7 @@ def generate_sotai_image(input_image: Image.Image, output_width: int, output_hei
             torch.cuda.empty_cache()
         gc.collect()
 
+@spaces.GPU
 def generate_refined_image(prompt: str, original_image: Image.Image, output_width: int, output_height: int, weight1: float, weight2: float) -> Image.Image:
     original_image = ensure_rgb(original_image)
     global refine_gen_pipe

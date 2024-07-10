@@ -1,5 +1,4 @@
 import gradio as gr
-import spaces
 import os
 import io
 from PIL import Image
@@ -23,7 +22,6 @@ def process_image(input_image, mode, weight1, weight2):
     
     return sotai_pil, sketch_pil
 
-@spaces.GPU
 def gradio_process_image(input_image, mode, weight1, weight2):
     sotai_image, sketch_image = process_image(input_image, mode, weight1, weight2)
     return sotai_image, sketch_image
