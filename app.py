@@ -26,6 +26,9 @@ def gradio_process_image(input_image, mode, weight1, weight2):
     sotai_image, sketch_image = process_image(input_image, mode, weight1, weight2)
     return sotai_image, sketch_image
 
+# pwdを取得
+print(os.getcwd())
+
 # サンプル画像のパスリスト
 sample_images = [
   '/images/sample1.png',
