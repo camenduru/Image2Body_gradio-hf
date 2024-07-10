@@ -120,6 +120,7 @@ def initialize_refine_model():
     sd_pipe = StableDiffusionPipeline.from_single_file(
         refine_sd_model_path,
         torch_dtype=torch_dtype,
+        variant="fp16", 
         use_safetensors=True
     ).to(device)
     
@@ -221,8 +222,7 @@ def generate_sotai_image(input_image: Image.Image, output_width: int, output_hei
 
         # EasyNegativeV2の内容
         easy_negative_v2 = "(worst quality, low quality, normal quality:1.4), lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, (bad_prompt_version2:0.8)"
-        print(f"\ndevice: {sotai_gen_pipe.device}\n")
-        sotai_gen_pipe = sotai_gen_pipe.cuda()
+
         output = sotai_gen_pipe(
             prompt,
             image=[input_image, input_image],
