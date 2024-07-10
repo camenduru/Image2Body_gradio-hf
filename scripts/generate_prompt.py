@@ -10,6 +10,8 @@ from tensorflow.keras.layers import TFSMLayer
 from huggingface_hub import hf_hub_download
 from pathlib import Path
 
+import spaces
+
 # 画像サイズの設定
 IMAGE_SIZE = 448
 
@@ -39,6 +41,7 @@ def download_model_files(repo_id, model_dir, sub_dir, files, sub_files):
     for file in sub_files:
         hf_hub_download(repo_id, file, subfolder=sub_dir, cache_dir=os.path.join(model_dir, sub_dir), force_download=True, force_filename=file)
 
+@spaces.GPU
 def load_wd14_tagger_model():
     """WD14タグ付けモデルをロード"""
     model_dir = "wd14_tagger_model"

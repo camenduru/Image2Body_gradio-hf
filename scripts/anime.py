@@ -14,9 +14,12 @@ from kornia.enhance import equalize_clahe
 from PIL import Image
 import numpy as np
 
+import spaces
+
 model = None
 device = None
 
+@spaces.GPU
 def init_model(use_local=False):
     global model, device
     model_opt = "default"
