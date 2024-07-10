@@ -35,7 +35,6 @@ def ensure_rgb(image):
         return image.convert('RGB')
     return image
 
-@spaces.GPU
 def initialize(_use_local=False, use_gpu=False, use_dotenv=False):
     if use_dotenv:
         load_dotenv()
@@ -51,12 +50,10 @@ def initialize(_use_local=False, use_gpu=False, use_dotenv=False):
     sotai_gen_pipe = initialize_sotai_model()
     refine_gen_pipe = initialize_refine_model()
 
-@spaces.GPU
 def load_lora(pipeline, lora_path, alpha=0.75):
     pipeline.load_lora_weights(lora_path)
     pipeline.fuse_lora(lora_scale=alpha)
 
-@spaces.GPU
 def initialize_sotai_model():
     global device, torch_dtype
 
@@ -111,7 +108,6 @@ def initialize_sotai_model():
 
     return sotai_gen_pipe
 
-@spaces.GPU
 def initialize_refine_model():
     global device, torch_dtype
 
