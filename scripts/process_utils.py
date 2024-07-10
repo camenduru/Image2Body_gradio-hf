@@ -51,6 +51,7 @@ def initialize(_use_local=False, use_gpu=False, use_dotenv=False):
     sotai_gen_pipe = initialize_sotai_model()
     refine_gen_pipe = initialize_refine_model()
 
+@spaces.GPU
 def load_lora(pipeline, lora_path, alpha=0.75):
     pipeline.load_lora_weights(lora_path)
     pipeline.fuse_lora(lora_scale=alpha)

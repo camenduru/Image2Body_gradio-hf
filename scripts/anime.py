@@ -28,6 +28,7 @@ def init_model(use_local=False):
     model.eval()
 
 # numpy配列の画像を受け取り、線画を生成してnumpy配列で返す
+@spaces.GPU
 def generate_sketch(image, clahe_clip=-1, load_size=512):
     """
     Generate sketch image from input image
