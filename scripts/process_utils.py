@@ -54,7 +54,6 @@ def load_lora(pipeline, lora_path, alpha=0.75):
 
 def initialize_sotai_model():
     global device, torch_dtype
-    print(f"Device: {device}, torch_dtype: {torch_dtype}")
 
     sotai_sd_model_path = get_file_path(os.environ["sotai_sd_model_name"], subfolder=os.environ["sd_models_dir"])
     controlnet_path1 =  get_file_path(os.environ["controlnet_name1"], subfolder=os.environ["controlnet_dir2"])
@@ -66,19 +65,19 @@ def initialize_sotai_model():
         sotai_sd_model_path,
         torch_dtype=torch_dtype,
         use_safetensors=True
-    ).to(device)
+    )
     
     # Load the ControlNet model
     controlnet1 = ControlNetModel.from_single_file(
         controlnet_path1,
         torch_dtype=torch_dtype
-    ).to(device)
+    )
     
     # Load the ControlNet model
     controlnet2 = ControlNetModel.from_single_file(
         controlnet_path2,
         torch_dtype=torch_dtype
-    ).to(device)
+    )
 
     # Create the ControlNet pipeline
     sotai_gen_pipe = StableDiffusionControlNetPipeline(
@@ -90,7 +89,7 @@ def initialize_sotai_model():
         safety_checker=sd_pipe.safety_checker,
         feature_extractor=sd_pipe.feature_extractor,
         controlnet=[controlnet1, controlnet2]
-    ).to(device)
+    )
 
     # LoRAの適用
     lora_names = [
@@ -120,23 +119,23 @@ def initialize_refine_model():
         refine_sd_model_path,
         torch_dtype=torch_dtype,
         use_safetensors=True
-    ).to(device)
+    )
     
     # controlnet_path = "models/cn/control_v11p_sd15_canny.pth"
     controlnet1 = ControlNetModel.from_single_file(
         controlnet_path3,
         torch_dtype=torch_dtype
-    ).to(device)
+    )
     
     # Load the ControlNet model
     controlnet2 = ControlNetModel.from_single_file(
         controlnet_path4,
         torch_dtype=torch_dtype
-    ).to(device)
+    )
 
     # Create the ControlNet pipeline
     refine_gen_pipe = StableDiffusionControlNetPipeline(
-        vae=AutoencoderKL.from_single_file(vae_path, torch_dtype=torch_dtype).to(device),
+        vae=AutoencoderKL.from_single_file(vae_path, torch_dtype=torch_dtype),
         text_encoder=sd_pipe.text_encoder,
         tokenizer=sd_pipe.tokenizer,
         unet=sd_pipe.unet,
@@ -144,7 +143,7 @@ def initialize_refine_model():
         safety_checker=sd_pipe.safety_checker,
         feature_extractor=sd_pipe.feature_extractor,
         controlnet=[controlnet1, controlnet2],  # 複数のControlNetを指定
-    ).to(device)
+    )
 
     # スケジューラーの設定
     refine_gen_pipe.scheduler = UniPCMultistepScheduler.from_config(refine_gen_pipe.scheduler.config)
