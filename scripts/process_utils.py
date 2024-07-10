@@ -54,6 +54,7 @@ def load_lora(pipeline, lora_path, alpha=0.75):
 
 def initialize_sotai_model():
     global device, torch_dtype
+    print(f"Device: {device}, torch_dtype: {torch_dtype}")
 
     sotai_sd_model_path = get_file_path(os.environ["sotai_sd_model_name"], subfolder=os.environ["sd_models_dir"])
     controlnet_path1 =  get_file_path(os.environ["controlnet_name1"], subfolder=os.environ["controlnet_dir2"])

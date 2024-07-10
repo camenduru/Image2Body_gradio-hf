@@ -8,11 +8,8 @@ from scripts.process_utils import initialize, process_image_as_base64
 from scripts.anime import init_model
 from scripts.generate_prompt import load_wd14_tagger_model
 
-# from dotenv import load_dotenv
-# load_dotenv()
-
 # 初期化
-initialize(_use_local=False, use_gpu=True)
+initialize(_use_local=False, use_gpu=True, use_dotenv=False)
 init_model(use_local=False)
 load_wd14_tagger_model()
 
