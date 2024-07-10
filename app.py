@@ -73,7 +73,7 @@ with gr.Blocks() as demo:
     
     gr.Examples(
         examples=sample_images,
-        inputs=input_image,
+        inputs=[input_image, mode, weight1, weight2]
         outputs=[sotai_output, sketch_output],
         fn=gradio_process_image,
         cache_examples=True,
