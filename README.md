@@ -1,10 +1,9 @@
 ---
-title: Image2Body Backend
+title: Image2Body Gradio
 emoji: 😻
 colorFrom: indigo
 colorTo: blue
-sdk: docker
-pinned: false
+sdk: gradio
 license: unknown
 startup_duration_timeout: 1h
 ---
