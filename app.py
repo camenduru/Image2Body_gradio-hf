@@ -8,7 +8,7 @@ from scripts.anime import init_model
 from scripts.generate_prompt import load_wd14_tagger_model
 
 # 初期化
-initialize(use_local=False, use_gpu=True)
+initialize(_use_local=False, use_gpu=True)
 init_model(use_local=False)
 load_wd14_tagger_model()
 
