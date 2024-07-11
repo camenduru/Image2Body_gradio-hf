@@ -223,22 +223,23 @@ def generate_sotai_image(input_image: Image.Image, output_width: int, output_hei
         # EasyNegativeV2の内容
         easy_negative_v2 = "(worst quality, low quality, normal quality:1.4), lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, (bad_prompt_version2:0.8)"
 
-        output = sotai_gen_pipe(
-            prompt,
-            image=[input_image, input_image],
-            negative_prompt=f"(wings:1.6), (clothes, garment, lighting, gray, missing limb, extra line, extra limb, extra arm, extra legs, hair, bangs, fringe, forelock, front hair, fill:1.4), (ink pool:1.6)",
-            # negative_prompt=f"{easy_negative_v2}, (wings:1.6), (clothes, garment, lighting, gray, missing limb, extra line, extra limb, extra arm, extra legs, hair, bangs, fringe, forelock, front hair, fill:1.4), (ink pool:1.6)",
-            num_inference_steps=20,
-            guidance_scale=8,
-            width=output_width,
-            height=output_height,
-            denoising_strength=0.13,
-            num_images_per_prompt=1,  # Equivalent to batch_size
-            guess_mode=[True, True],  # Equivalent to pixel_perfect
-            controlnet_conditioning_scale=[1.4, 1.3],  # 各ControlNetの重み
-            guidance_start=[0.0, 0.0],
-            guidance_end=[1.0, 1.0],
-        )
+        with torch.autocast('cuda'):
+            output = sotai_gen_pipe(
+                prompt,
+                image=[input_image, input_image],
+                negative_prompt=f"(wings:1.6), (clothes, garment, lighting, gray, missing limb, extra line, extra limb, extra arm, extra legs, hair, bangs, fringe, forelock, front hair, fill:1.4), (ink pool:1.6)",
+                # negative_prompt=f"{easy_negative_v2}, (wings:1.6), (clothes, garment, lighting, gray, missing limb, extra line, extra limb, extra arm, extra legs, hair, bangs, fringe, forelock, front hair, fill:1.4), (ink pool:1.6)",
+                num_inference_steps=20,
+                guidance_scale=8,
+                width=output_width,
+                height=output_height,
+                denoising_strength=0.13,
+                num_images_per_prompt=1,  # Equivalent to batch_size
+                guess_mode=[True, True],  # Equivalent to pixel_perfect
+                controlnet_conditioning_scale=[1.4, 1.3],  # 各ControlNetの重み
+                guidance_start=[0.0, 0.0],
+                guidance_end=[1.0, 1.0],
+            )
         generated_image = output.images[0]
         
         return generated_image
@@ -312,12 +313,10 @@ def process_image(input_image, mode: str, weight1: float = 0.4, weight2: float =
         sketch_image = create_rgba_image(sketch_binary, [0, 0, 255])
 
         # 素体画像の生成
-        with torch.autocast('cuda'):
-            sotai_image = generate_sotai_image(refined_image, output_width, output_height)
+        sotai_image = generate_sotai_image(refined_image, output_width, output_height)
 
     elif mode == "original":
-        with torch.autocast('cuda'):
-            sotai_image = generate_sotai_image(input_image, output_width, output_height)
+        sotai_image = generate_sotai_image(input_image, output_width, output_height)
         
         # スケッチ画像の生成
         input_image_np = np.array(input_image)
