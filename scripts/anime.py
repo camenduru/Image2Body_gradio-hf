@@ -19,7 +19,6 @@ import spaces
 model = None
 device = None
 
-@spaces.GPU
 def init_model(use_local=False):
     global model, device
     model_opt = "default"
