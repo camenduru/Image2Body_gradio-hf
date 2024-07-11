@@ -43,8 +43,8 @@ iface = gr.Interface(
     description="Upload an image and select processing options to generate body and sketch images."
 )
 
-# APIとして公開
-app = gr.mount_gradio_app(app, iface, path="/")
+# # APIとして公開
+# app = gr.mount_gradio_app(app, iface, path="/")
 
 # Hugging Face Spacesでデプロイする場合
 iface.queue().launch()
