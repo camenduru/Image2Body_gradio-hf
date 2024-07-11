@@ -312,7 +312,8 @@ def process_image(input_image, mode: str, weight1: float = 0.4, weight2: float =
         sketch_image = create_rgba_image(sketch_binary, [0, 0, 255])
 
         # 素体画像の生成
-        sotai_image = generate_sotai_image(refined_image, output_width, output_height)
+        with torch.autocast('cuda'):
+            sotai_image = generate_sotai_image(refined_image, output_width, output_height)
 
     elif mode == "original":
         sotai_image = generate_sotai_image(input_image, output_width, output_height)
