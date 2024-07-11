@@ -52,7 +52,7 @@ def initialize(_use_local=False, use_gpu=False, use_dotenv=False):
 
 def load_lora(pipeline, lora_path, alpha=0.75):
     pipeline.load_lora_weights(lora_path)
-    # pipeline.fuse_lora(lora_scale=alpha)
+    pipeline.fuse_lora(lora_scale=alpha)
 
 def initialize_sotai_model():
     global device, torch_dtype
