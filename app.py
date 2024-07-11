@@ -9,6 +9,8 @@ import base64
 from scripts.process_utils import initialize, process_image_as_base64
 from scripts.anime import init_model
 from scripts.generate_prompt import load_wd14_tagger_model
+import uuid
+import time
 
 # 初期化
 initialize(_use_local=False, use_gpu=True, use_dotenv=False)
