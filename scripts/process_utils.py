@@ -100,9 +100,9 @@ def initialize_sotai_model():
         # (os.environ["lora_name2"], 0.3),
     ]
     
-    for lora_name, alpha in lora_names:
-        lora_path = get_file_path(lora_name, subfolder=os.environ["lora_dir"])
-        load_lora(sotai_gen_pipe, lora_path, adapter_name=lora_name.split(".")[0], alpha=alpha)
+    # for lora_name, alpha in lora_names:
+    #     lora_path = get_file_path(lora_name, subfolder=os.environ["lora_dir"])
+    #     load_lora(sotai_gen_pipe, lora_path, adapter_name=lora_name.split(".")[0], alpha=alpha)
 
     # スケジューラーの設定
     sotai_gen_pipe.scheduler = UniPCMultistepScheduler.from_config(sotai_gen_pipe.scheduler.config)
