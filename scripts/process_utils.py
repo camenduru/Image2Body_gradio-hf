@@ -316,7 +316,8 @@ def process_image(input_image, mode: str, weight1: float = 0.4, weight2: float =
             sotai_image = generate_sotai_image(refined_image, output_width, output_height)
 
     elif mode == "original":
-        sotai_image = generate_sotai_image(input_image, output_width, output_height)
+        with torch.autocast('cuda'):
+            sotai_image = generate_sotai_image(refined_image, output_width, output_height)
         
         # スケッチ画像の生成
         input_image_np = np.array(input_image)
