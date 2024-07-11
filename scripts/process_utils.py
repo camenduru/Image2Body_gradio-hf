@@ -84,7 +84,6 @@ def initialize_sotai_model():
     # Create the ControlNet pipeline
     sotai_gen_pipe = StableDiffusionControlNetPipeline(
         vae=sd_pipe.vae.to(device),
-        torch_dtype=torch_dtype,
         text_encoder=sd_pipe.text_encoder,
         tokenizer=sd_pipe.tokenizer,
         unet=sd_pipe.unet.to(device),
