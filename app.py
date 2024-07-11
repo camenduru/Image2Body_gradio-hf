@@ -1,3 +1,4 @@
+from fastapi import FastAPI
 import gradio as gr
 import os
 import io
@@ -7,6 +8,7 @@ from scripts.process_utils import initialize, process_image_as_base64
 from scripts.anime import init_model
 from scripts.generate_prompt import load_wd14_tagger_model
 
+app = FastAPI()
 # 初期化
 initialize(_use_local=False, use_gpu=True, use_dotenv=False)
 init_model(use_local=False)
@@ -17,13 +19,8 @@ def process_image(input_image, mode, weight1, weight2):
     sotai_image, sketch_image = process_image_as_base64(input_image, mode, weight1, weight2)
     return sotai_image, sketch_image
 
-def gradio_process_image(input_image, mode, weight1, weight2):
-    # Gradio用の関数：PILイメージを受け取り、Base64文字列を返す
-    input_image_bytes = io.BytesIO()
-    input_image.save(input_image_bytes, format='PNG')
-    input_image_base64 = base64.b64encode(input_image_bytes.getvalue()).decode('utf-8')
-    
-    sotai_base64, sketch_base64 = process_image(input_image_base64, mode, weight1, weight2)
+def gradio_process_image(input_image, mode, weight1, weight2):    
+    sotai_base64, sketch_base64 = process_image(input_image, mode, weight1, weight2)
     return sotai_base64, sketch_base64
 
 # Gradio インターフェースの定義
@@ -43,8 +40,8 @@ iface = gr.Interface(
     description="Upload an image and select processing options to generate body and sketch images."
 )
 
-# # APIとして公開
-# app = gr.mount_gradio_app(app, iface, path="/")
+# APIとして公開
+app = gr.mount_gradio_app(app, iface, path="/")
 
 # Hugging Face Spacesでデプロイする場合
 iface.queue().launch()
