@@ -50,10 +50,10 @@ def initialize(_use_local=False, use_gpu=False, use_dotenv=False):
     sotai_gen_pipe = initialize_sotai_model()
     refine_gen_pipe = initialize_refine_model()
 
-def load_lora(pipeline, lora_path, alpha=0.75):
-    pipeline.load_lora_weights(lora_path)
-    pipeline.fuse_lora(lora_scale=alpha)
-    pipeline.set_lora_device(device)
+def load_lora(pipeline, lora_path, adapter_name, alpha=0.75):
+    pipeline.load_lora_weights(lora_path, adapter_name)
+    pipeline.fuse_lora(lora_scale=alpha, adapter_names=[adapter_name])
+    pipeline.set_lora_device(adapter_names=[adapter_name], device=device)   
 
 def initialize_sotai_model():
     global device, torch_dtype
