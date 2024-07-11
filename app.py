@@ -29,30 +29,24 @@ def process_image(input_image, mode, weight1, weight2):
 sample_images = [
   'images/sample1.png',
   'images/sample2.png',
-  # 'images/sample3.png',
-  'images/sample4.png',
-  'images/sample5.png',
-  'images/sample6.png',
-  'images/sample7.png',
-  'images/sample8.png',
-  # 'images/sample9.png',
-  'images/sample10.png',
-  'images/sample11.png',
-  # 'images/sample12.png',
-  # 'images/sample13.png',
-  # 'images/sample14.png',
-  'images/sample15.png',
-  'images/sample16.png',
-  # 'images/sample17.png',
-  'images/sample18.png',
-  'images/sample19.png',
-  'images/sample20.png',
-  'images/sample21.png',
+#   'images/sample4.png',
+#   'images/sample5.png',
+#   'images/sample6.png',
+#   'images/sample7.png',
+#   'images/sample8.png',
+#   'images/sample10.png',
+#   'images/sample11.png',
+#   'images/sample15.png',
+#   'images/sample16.png',
+#   'images/sample18.png',
+#   'images/sample19.png',
+#   'images/sample20.png',
+#   'images/sample21.png',
 ]
 
 # Gradio インターフェースの定義
 with gr.Blocks() as demo:
-    gr.Markdown("# Image2Body Test")
+    gr.Markdown("# Image2Body Demo")
     
     with gr.Row():
         with gr.Column():
