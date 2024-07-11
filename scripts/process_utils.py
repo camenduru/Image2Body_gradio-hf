@@ -83,10 +83,11 @@ def initialize_sotai_model():
 
     # Create the ControlNet pipeline
     sotai_gen_pipe = StableDiffusionControlNetPipeline(
-        vae=sd_pipe.vae,
+        vae=sd_pipe.vae.to(device),
+        torch_dtype=torch_dtype,
         text_encoder=sd_pipe.text_encoder,
         tokenizer=sd_pipe.tokenizer,
-        unet=sd_pipe.unet,
+        unet=sd_pipe.unet.to(device),
         scheduler=sd_pipe.scheduler,
         safety_checker=sd_pipe.safety_checker,
         feature_extractor=sd_pipe.feature_extractor,
@@ -223,23 +224,22 @@ def generate_sotai_image(input_image: Image.Image, output_width: int, output_hei
         # EasyNegativeV2の内容
         easy_negative_v2 = "(worst quality, low quality, normal quality:1.4), lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, (bad_prompt_version2:0.8)"
 
-        with torch.autocast('cuda'):
-            output = sotai_gen_pipe(
-                prompt,
-                image=[input_image, input_image],
-                negative_prompt=f"(wings:1.6), (clothes, garment, lighting, gray, missing limb, extra line, extra limb, extra arm, extra legs, hair, bangs, fringe, forelock, front hair, fill:1.4), (ink pool:1.6)",
-                # negative_prompt=f"{easy_negative_v2}, (wings:1.6), (clothes, garment, lighting, gray, missing limb, extra line, extra limb, extra arm, extra legs, hair, bangs, fringe, forelock, front hair, fill:1.4), (ink pool:1.6)",
-                num_inference_steps=20,
-                guidance_scale=8,
-                width=output_width,
-                height=output_height,
-                denoising_strength=0.13,
-                num_images_per_prompt=1,  # Equivalent to batch_size
-                guess_mode=[True, True],  # Equivalent to pixel_perfect
-                controlnet_conditioning_scale=[1.4, 1.3],  # 各ControlNetの重み
-                guidance_start=[0.0, 0.0],
-                guidance_end=[1.0, 1.0],
-            )
+        output = sotai_gen_pipe(
+            prompt,
+            image=[input_image, input_image],
+            negative_prompt=f"(wings:1.6), (clothes, garment, lighting, gray, missing limb, extra line, extra limb, extra arm, extra legs, hair, bangs, fringe, forelock, front hair, fill:1.4), (ink pool:1.6)",
+            # negative_prompt=f"{easy_negative_v2}, (wings:1.6), (clothes, garment, lighting, gray, missing limb, extra line, extra limb, extra arm, extra legs, hair, bangs, fringe, forelock, front hair, fill:1.4), (ink pool:1.6)",
+            num_inference_steps=20,
+            guidance_scale=8,
+            width=output_width,
+            height=output_height,
+            denoising_strength=0.13,
+            num_images_per_prompt=1,  # Equivalent to batch_size
+            guess_mode=[True, True],  # Equivalent to pixel_perfect
+            controlnet_conditioning_scale=[1.4, 1.3],  # 各ControlNetの重み
+            guidance_start=[0.0, 0.0],
+            guidance_end=[1.0, 1.0],
+        )
         generated_image = output.images[0]
         
         return generated_image
