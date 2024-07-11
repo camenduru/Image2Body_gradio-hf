@@ -17,15 +17,16 @@ load_wd14_tagger_model()
 def process_image(input_image, mode, weight1, weight2):
     # 画像処理ロジック
     sotai_image, sketch_image = process_image_as_base64(input_image, mode, weight1, weight2)
-    return sotai_image, sketch_image
-
-def gradio_process_image(input_image, mode, weight1, weight2):    
-    sotai_base64, sketch_base64 = process_image(input_image, mode, weight1, weight2)
-    return sotai_base64, sketch_base64
+    
+    # Base64文字列をPIL Imageに変換
+    sotai_pil = Image.open(io.BytesIO(base64.b64decode(sotai_image)))
+    sketch_pil = Image.open(io.BytesIO(base64.b64decode(sketch_image)))
+    
+    return sotai_pil, sketch_pil
 
 # Gradio インターフェースの定義
 iface = gr.Interface(
-    fn=gradio_process_image,
+    fn=process_image,
     inputs=[
         gr.Image(type="pil", label="Input Image"),
         gr.Radio(["original", "refine"], label="Mode", value="original"),
@@ -41,7 +42,7 @@ iface = gr.Interface(
 )
 
 # APIとして公開
-app = gr.mount_gradio_app(app, iface, path="/")
+app = gr.mount_gradio_app(app, iface, path="/predict")
 
 # Hugging Face Spacesでデプロイする場合
 iface.queue().launch()
