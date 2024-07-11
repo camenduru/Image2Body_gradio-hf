@@ -14,6 +14,7 @@ initialize(_use_local=False, use_gpu=True, use_dotenv=False)
 init_model(use_local=False)
 load_wd14_tagger_model()
 
+@spaces.GPU
 def process_image(input_image, mode, weight1, weight2):
     # 画像処理ロジック
     sotai_image, sketch_image = process_image_as_base64(input_image, mode, weight1, weight2)
@@ -23,11 +24,6 @@ def process_image(input_image, mode, weight1, weight2):
     sketch_pil = Image.open(io.BytesIO(base64.b64decode(sketch_image)))
     
     return sotai_pil, sketch_pil
-
-@spaces.GPU
-def gradio_process_image(input_image, mode, weight1, weight2):
-    sotai_image, sketch_image = process_image(input_image, mode, weight1, weight2)
-    return sotai_image, sketch_image
 
 # サンプル画像のパスリスト
 sample_images = [
@@ -75,12 +71,12 @@ with gr.Blocks() as demo:
         examples=[[path, "original", 0.6, 0.05] for path in sample_images],
         inputs=[input_image, mode, weight1, weight2],
         outputs=[sotai_output, sketch_output],
-        fn=gradio_process_image,
+        fn=process_image,
         cache_examples=True,
     )
     
     process_btn.click(
-        fn=gradio_process_image,
+        fn=process_image,
         inputs=[input_image, mode, weight1, weight2],
         outputs=[sotai_output, sketch_output]
     )
