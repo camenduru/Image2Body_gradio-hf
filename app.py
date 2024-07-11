@@ -1,4 +1,3 @@
-from fastapi import FastAPI
 import gradio as gr
 import os
 import io
@@ -8,7 +7,6 @@ from scripts.process_utils import initialize, process_image_as_base64
 from scripts.anime import init_model
 from scripts.generate_prompt import load_wd14_tagger_model
 
-app = FastAPI()
 # 初期化
 initialize(_use_local=False, use_gpu=True, use_dotenv=False)
 init_model(use_local=False)
@@ -40,9 +38,6 @@ iface = gr.Interface(
     title="Image2Body API",
     description="Upload an image and select processing options to generate body and sketch images."
 )
-
-# APIとして公開
-app = gr.mount_gradio_app(app, iface, path="/predict")
 
 # Hugging Face Spacesでデプロイする場合
 iface.queue().launch()
