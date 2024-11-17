@@ -7,8 +7,8 @@ diffusers==0.27.0 # pth file cannot be loaded in the latest version
 Flask==3.0.3
 Flask-Cors==4.0.0
 Flask-SocketIO==5.3.6
-gradio==4.36.1
-huggingface_hub==0.23.2
+gradio==5.5.0
+huggingface-hub==0.25.2
 kornia==0.7.1
 numpy==1.23.5
 opencv-python==4.9.0.80
