@@ -19,22 +19,22 @@ def process_image(input_image, mode, weight1=None, weight2=None):
     elif mode == "refine":
         sotai_image, sketch_image = process_image_as_base64(input_image, mode, weight1, weight2)
 
-    # テスト用に、Base64データを返す
-    sotai_image = image_to_base64(input_image)
-    sketch_image = image_to_base64(input_image)
-
-    return sotai_image, sketch_image
+    return sotai_image, sketch_image, None
 
 def mix_images(sotai_image_data, sketch_image_data, opacity1, opacity2):
-    # Base64からPILイメージに変換
-    sotai_image = Image.open(io.BytesIO(base64.b64decode(sotai_image_data)))
-    sketch_image = Image.open(io.BytesIO(base64.b64decode(sketch_image_data)))
-    # 画像を合成
-    mixed_image = Image.new('RGBA', sotai_image.size, (0, 0, 0, 0))
-    opacity_mask1 = Image.new('L', sotai_image.size, int(opacity1 * 255))
-    opacity_mask2 = Image.new('L', sotai_image.size, int(opacity2 * 255))
-    mixed_image.paste(sotai_image, (0, 0), mask=opacity_mask1)
-    mixed_image.paste(sketch_image, (0, 0), mask=opacity_mask2)
+    sotai_image = Image.open(io.BytesIO(base64.b64decode(sotai_image_data))).convert('RGBA')
+    sketch_image = Image.open(io.BytesIO(base64.b64decode(sketch_image_data))).convert('RGBA')
+
+    if sotai_image.size != sketch_image.size:
+        sketch_image = sketch_image.resize(sotai_image.size, Image.Resampling.LANCZOS)
+
+    mixed_image = Image.new('RGBA', sotai_image.size, (255, 255, 255, 255))
+
+    sotai_alpha = sotai_image.getchannel('A').point(lambda x: int(x * opacity1))
+    sketch_alpha = sketch_image.getchannel('A').point(lambda x: int(x * opacity2))
+
+    mixed_image.paste(sketch_image, (0, 0), mask=sketch_alpha)
+    mixed_image.paste(sotai_image, (0, 0), mask=sotai_alpha)
 
     return mixed_image
 
@@ -47,20 +47,21 @@ with gr.Blocks() as demo:
     submit = None
     with gr.Row():
         with gr.Column() as input_col:
+            input_image = gr.Image(type="pil", label="Input Image")
             with gr.Tab("original"):
-                original_input = [
-                    gr.Image(type="pil", label="Input Image"),
-                    gr.Text("original", label="Mode", visible=False),
-                ]
+                original_mode = gr.Text("original", label="Mode", visible=False)
                 original_submit = gr.Button("Submit", variant="primary")
             with gr.Tab("refine"):
                 refine_input = [
-                    gr.Image(type="pil", label="Input Image"),
                     gr.Text("refine", label="Mode", visible=False),
                     gr.Slider(0, 2, value=0.6, step=0.05, label="Weight 1 (Sketch)"),
                     gr.Slider(0, 1, value=0.05, step=0.025, label="Weight 2 (Body)")
                 ]
                 refine_submit = gr.Button("Submit", variant="primary")
+            gr.Examples(
+                examples=[f"images/sample{i}.png" for i in [1, 2, 4, 5, 6, 7, 10, 16, 18, 19]],
+                inputs=[input_image]
+            )
         with gr.Column() as output_col:
             sotai_image_data = gr.Text(label="Sotai Image data", visible=False)
             sketch_image_data = gr.Text(label="Sketch Image data", visible=False)
@@ -70,13 +71,13 @@ with gr.Blocks() as demo:
 
     original_submit.click(
         process_image,
-        inputs=original_input,
-        outputs=[sotai_image_data, sketch_image_data]
+        inputs=[input_image, original_mode],
+        outputs=[sotai_image_data, sketch_image_data, mixed_image]
     )
     refine_submit.click(
         process_image,
-        inputs=refine_input,
-        outputs=[sotai_image_data, sketch_image_data]
+        inputs=[input_image, refine_input[0], refine_input[1], refine_input[2]],
+        outputs=[sotai_image_data, sketch_image_data, mixed_image]
     )
     sotai_image_data.change(
         mix_images,
@@ -95,24 +96,3 @@ with gr.Blocks() as demo:
     )
 
     demo.launch()
-
-
-# # Gradio インターフェースの定義
-# iface = gr.Interface(
-#     fn=process_image,
-#     inputs=[
-#         gr.Image(type="pil", label="Input Image"),
-#         gr.Radio(["original", "refine"], label="Mode", value="original"),
-#         gr.Slider(0, 2, value=0.6, step=0.05, label="Weight 1 (Sketch)"),
-#         gr.Slider(0, 1, value=0.05, step=0.025, label="Weight 2 (Body)")
-#     ],
-#     outputs=[
-#         gr.Text(label="Sotai Image URL"),
-#         gr.Text(label="Sketch Image URL")
-#     ],
-#     title="Image2Body API",
-#     description="Upload an image and select processing options to generate body and sketch images."
-# )
-
-# # Hugging Face Spacesでデプロイする場合
-# iface.queue().launch()
