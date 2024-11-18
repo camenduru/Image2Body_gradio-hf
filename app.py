@@ -1,4 +1,5 @@
 import gradio as gr
+import spaces
 
 with gr.Blocks() as demo:
     # title
