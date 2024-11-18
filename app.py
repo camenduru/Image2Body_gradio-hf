@@ -1,6 +1,7 @@
 import gradio as gr
 import spaces
 
+@spaces.GPU
 def process_image(input_image, mode, weight1=None, weight2=None):
     print(f"Processing image with mode={mode}, weight1={weight1}, weight2={weight2}")
     # 既存の画像処理ロジック
