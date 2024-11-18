@@ -1,5 +1,5 @@
 ---
-title: TripletGeoEncoder Demo
+title: Image2Body Demo
 emoji: 🦀
 colorFrom: gray
 colorTo: pink
