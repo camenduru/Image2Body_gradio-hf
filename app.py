@@ -5,6 +5,7 @@ import base64
 from scripts.process_utils import initialize, process_image_as_base64, image_to_base64
 from scripts.anime import init_model
 from scripts.generate_prompt import load_wd14_tagger_model
+import webbrowser
 
 # 初期化
 initialize(_use_local=False, use_gpu=True, use_dotenv=True)
@@ -38,6 +39,15 @@ def mix_images(sotai_image_data, sketch_image_data, opacity1, opacity2):
 
     return mixed_image
 
+# X(Twitter)に投稿するリンクを生成
+def generate_twitter_link(image):
+    image_base64 = image_to_base64(image)
+    return f"https://twitter.com/intent/tweet?text=Image2Body&url={image_base64} #Image2Body"
+
+def post_to_twitter(image):
+    link = generate_twitter_link(image)
+    webbrowser.open_new_tab(link)
+
 with gr.Blocks() as demo:
     # title
     gr.HTML("<h1>Image2Body demo</h1>")
@@ -68,6 +78,12 @@ with gr.Blocks() as demo:
             mixed_image = gr.Image(label="Output Image", elem_id="output_image")
             opacity_slider1 = gr.Slider(0, 1, value=0.5, step=0.05, label="Opacity (Sotai)")
             opacity_slider2 = gr.Slider(0, 1, value=0.5, step=0.05, label="Opacity (Sketch)")
+            post_button = gr.Button("Post to X(Twitter)", variant="secondary")
+            post_button.click(
+                post_to_twitter,
+                inputs=[mixed_image],
+                outputs=None
+            )
 
     original_submit.click(
         process_image,
