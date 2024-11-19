@@ -78,12 +78,12 @@ with gr.Blocks() as demo:
             mixed_image = gr.Image(label="Output Image", elem_id="output_image")
             opacity_slider1 = gr.Slider(0, 1, value=0.5, step=0.05, label="Opacity (Sotai)")
             opacity_slider2 = gr.Slider(0, 1, value=0.5, step=0.05, label="Opacity (Sketch)")
-            post_button = gr.Button("Post to X(Twitter)", variant="secondary")
-            post_button.click(
-                post_to_twitter,
-                inputs=[mixed_image],
-                outputs=None
-            )
+            # post_button = gr.Button("Post to X(Twitter)", variant="secondary")
+            # post_button.click(
+            #     post_to_twitter,
+            #     inputs=[mixed_image],
+            #     outputs=None
+            # )
 
     original_submit.click(
         process_image,
