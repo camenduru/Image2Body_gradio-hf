@@ -57,7 +57,7 @@ with gr.Blocks() as demo:
     submit = None
     with gr.Row():
         with gr.Column() as input_col:
-            input_image = gr.Image(type="pil", label="Input Image")
+            input_image = gr.Image(type="pil", label="Input Image", height=512)
             with gr.Tab("original"):
                 original_mode = gr.Text("original", label="Mode", visible=False)
                 original_submit = gr.Button("Submit", variant="primary")
