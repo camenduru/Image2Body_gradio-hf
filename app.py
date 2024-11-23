@@ -6,6 +6,7 @@ from scripts.process_utils import initialize, process_image_as_base64, image_to_
 from scripts.anime import init_model
 from scripts.generate_prompt import load_wd14_tagger_model
 import webbrowser
+from datetime import datetime
 
 # 初期化
 initialize(_use_local=False, use_gpu=True, use_dotenv=True)
@@ -13,7 +14,9 @@ init_model(use_local=False)
 load_wd14_tagger_model()
 
 def process_image(input_image, mode, weight1=None, weight2=None):
-    print(f"Processing image with mode={mode}, weight1={weight1}, weight2={weight2}")
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # 現在のタイムスタンプを取得
+    print(f"[{current_time}] Processing image with mode={mode}, weight1={weight1}, weight2={weight2}")
+
     # 既存の画像処理ロジック
     if mode == "original":
         sotai_image, sketch_image = process_image_as_base64(input_image, mode, None, None)
