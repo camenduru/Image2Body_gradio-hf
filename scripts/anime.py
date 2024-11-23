@@ -14,12 +14,12 @@ from kornia.enhance import equalize_clahe
 from PIL import Image
 import numpy as np
 
-import spaces
+
 
 model = None
 device = None
 
-def init_model(use_local=False):
+def init_model(use_local=True):
     global model, device
     model_opt = "default"
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # issue: nevetherless, use_gpu is False, it still uses GPU
@@ -27,7 +27,7 @@ def init_model(use_local=False):
     model.eval()
 
 # numpy配列の画像を受け取り、線画を生成してnumpy配列で返す
-@spaces.GPU
+
 def generate_sketch(image, clahe_clip=-1, load_size=512):
     """
     Generate sketch image from input image

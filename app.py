@@ -10,8 +10,8 @@ from datetime import datetime
 from pytz import timezone
 
 # 初期化
-initialize(_use_local=False, use_gpu=True, use_dotenv=True)
-init_model(use_local=False)
+initialize(_use_local=True, use_gpu=True, use_dotenv=True)
+init_model(use_local=True)
 load_wd14_tagger_model()
 
 def process_image(input_image, mode, weight1=None, weight2=None):

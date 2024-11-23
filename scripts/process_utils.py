@@ -14,10 +14,10 @@ from peft import PeftModel
 from dotenv import load_dotenv
 from scripts.hf_utils import download_file
 
-import spaces
+
 
 # グローバル変数
-use_local = False
+use_local = True
 model = None
 device = None
 torch_dtype = None # torch.float16 if device == "cuda" else torch.float32
@@ -35,7 +35,7 @@ def ensure_rgb(image):
         return image.convert('RGB')
     return image
 
-def initialize(_use_local=False, use_gpu=False, use_dotenv=False):
+def initialize(_use_local=True, use_gpu=False, use_dotenv=False):
     if use_dotenv:
         load_dotenv()
     global model, sotai_gen_pipe, refine_gen_pipe, use_local, device, torch_dtype
@@ -205,7 +205,7 @@ def create_rgba_image(binary_image: np.ndarray, color: list) -> Image.Image:
     rgba_image[:, :, 3] = binary_image
     return Image.fromarray(rgba_image, 'RGBA')
 
-@spaces.GPU
+
 def generate_sotai_image(input_image: Image.Image, output_width: int, output_height: int) -> Image.Image:
     input_image = ensure_rgb(input_image)
     global sotai_gen_pipe
@@ -250,7 +250,7 @@ def generate_sotai_image(input_image: Image.Image, output_width: int, output_hei
             torch.cuda.empty_cache()
         gc.collect()
 
-@spaces.GPU
+
 def generate_refined_image(prompt: str, original_image: Image.Image, output_width: int, output_height: int, weight1: float, weight2: float) -> Image.Image:
     original_image = ensure_rgb(original_image)
     global refine_gen_pipe
