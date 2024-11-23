@@ -7,6 +7,7 @@ from scripts.anime import init_model
 from scripts.generate_prompt import load_wd14_tagger_model
 import webbrowser
 from datetime import datetime
+from pytz import timezone
 
 # 初期化
 initialize(_use_local=False, use_gpu=True, use_dotenv=True)
@@ -14,8 +15,8 @@ init_model(use_local=False)
 load_wd14_tagger_model()
 
 def process_image(input_image, mode, weight1=None, weight2=None):
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # 現在のタイムスタンプを取得
-    print(f"[{current_time}] Processing image with mode={mode}, weight1={weight1}, weight2={weight2}")
+    tokyo_time = datetime.now(timezone('Asia/Tokyo')).strftime("%Y-%m-%d %H:%M:%S")  # 日本時間のタイムスタンプ
+    print(f"[{tokyo_time}] Processing image with mode={mode}, weight1={weight1}, weight2={weight2}")
 
     # 既存の画像処理ロジック
     if mode == "original":
